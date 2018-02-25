@@ -1,0 +1,110 @@
+#svgContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+#graphNameForm {
+  height: 9px;
+  padding: 3px;
+}
+
+body {
+    background-color: lightgrey;
+    overflow:hidden;
+}
+
+/*
+#nodeEditorPanel {
+  width: 400px;
+}
+*/
+
+.editor-panel {
+    z-index: 100;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    padding: 6px;
+    background-color: #f7f7f7;
+}
+
+#relationshipEditorPanel {
+    top: 310px;
+}
+
+.modal.pop-up-editor.node {
+    position: absolute;
+}
+
+.modal.export-markup {
+    position: absolute;
+    width: 800px;
+    margin-left: -400px;
+}
+
+.modal.export-markup .modal-body {
+    overflow: hidden;
+    max-height: 70%;
+}
+
+p.button-row {
+    text-align: right;
+}
+
+textarea.code {
+    padding: 0;
+    resize: auto;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    font-family: Menlo, monospace;
+    font-size: 10pt;
+}
+
+textarea.code-edit-style {
+    padding: 0;
+    resize: auto;
+    width: 100%;
+    height: 500px;
+    border: none;
+    box-shadow: none;
+    font-family: Menlo, monospace;
+    font-size: 10pt;
+}
+
+.top-right-btn-bar {
+    padding: 14px 15px 15px;
+    margin-bottom: 0;
+    text-align: right;
+}
+
+.top-right-btn-bar .btn + .btn {
+    margin-bottom: 0;
+    margin-left: 5px;
+}
+
+circle.node-base {
+  fill: #FF756E;
+  stroke: #E06760;
+  stroke-width: 3px;
+}
+
+text.caption {
+  fill: #FFFFFF;
+}
+
+circle.node.overlay:hover {
+    fill: rgba(150, 150, 255, 0.5);
+}
+
+circle.node.ring:hover {
+    stroke: rgba(150, 150, 255, 0.5);
+}
+
+path.relationship.overlay:hover {
+    fill: rgba(150, 150, 255, 0.5);
+    stroke: rgba(150, 150, 255, 0.5);
+}

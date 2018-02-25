@@ -1,0 +1,28 @@
+.graph-diagram-markup {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.graph-diagram-markup .node {
+    font-size: 14px;
+    margin: 5px;
+    padding: 5px;
+    min-width: 30px;
+    background-color: #f7f7f9;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.graph-diagram-markup .relationship {
+    font-size: 14px;
+    width: 2px;
+    margin: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: none;
+}
+
+.graph-diagram-markup .properties {
+    font-size: 14px;
+    margin: 12px;
+    padding: 4px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>graph-editor-react</title>
+        <style>
+
+          .active {
+            stroke: #000;
+            stroke-width: 4px;
+          }
+
+          </style>
+          <style id="graph-editor-style">
+          body {
+              background-color: lightgrey;
+          }
+
+          circle.node-base {
+            fill: #FF756E;
+            stroke: #E06760;
+            stroke-width: 3px;
+          }
+
+          text.caption {
+            fill: #FFFFFF;
+          }
+
+          circle.node.overlay:hover {
+              fill: rgba(150, 150, 255, 0.5);
+          }
+
+          circle.node.ring:hover {
+              stroke: rgba(150, 150, 255, 0.5);
+          }
+
+          path.relationship.overlay:hover {
+              fill: rgba(150, 150, 255, 0.5);
+              stroke: rgba(150, 150, 255, 0.5);
+          }
+        </style>
+    </head>
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="css/graph-diagram.css" type="text/css">
+    <link rel="stylesheet" href="css/graph-editor.css" type="text/css">
+    <link rel="stylesheet" href="css/graph-style-bootstrap.css" type="text/css" class="graph-style">
+    <body>
+        <div id="reactContainer" class="container"></div>
+
+        <!-- Dependencies -->
+        <script src="./node_modules/react/dist/react.js"></script>
+        <script src="./node_modules/react-dom/dist/react-dom.js"></script>
+
+        <!-- Main -->
+        <script src="./dist/bundle.js"></script>
+    </body>
+</html>
