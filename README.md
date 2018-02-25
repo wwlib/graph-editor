@@ -5,3 +5,6 @@
 
 ### build
 `npm run build`
+
+### run
+`electron .`
