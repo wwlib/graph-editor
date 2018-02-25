@@ -13,6 +13,7 @@ import { drag } from 'd3-drag';
 import * as d3Array from 'd3-array';
 import * as d3Scale from 'd3-scale';
 import * as d3Zoom from 'd3-zoom';
+import * as d3Force from 'd3-force';
 
 import {
   Diagram,
@@ -22,6 +23,7 @@ import {
   Relationship,
   LayoutModel,
   LayoutNode,
+  //LayoutRelationship,
   Markup,
   d3Types
 } from 'graph-diagram';
@@ -43,6 +45,31 @@ export interface GraphEditorState {
 let thiz: GraphEditor;
 let svgContainer: any;
 let svg_g: any;
+let simulation: any;
+let simulationTickCount: number = 0;
+let simNodes: any;
+let simLinks: any;
+let simData = JSON.parse(`
+{
+  "nodes": [{
+      "r": 17
+  }, {
+      "r": 8
+  }, {
+      "r": 27
+  }],
+  "links": [{
+      "source": "0",
+      "target": "1"
+  }, {
+      "source": "1",
+      "target": "2"
+  }, {
+      "source": "2",
+      "target": "0"
+  }]
+}
+`);
 
 let testMarkup: string = `
 <ul class="graph-diagram-markup" data-internal-scale="1" data-external-scale="1">
@@ -195,6 +222,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             });
         console.log(`diagram: `, this.diagram);
         this.draw();
+        this.startSimulation();
     }
 
     parseMarkup( markup: any )
@@ -354,6 +382,141 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
           .style('stroke', s)
           .style('stroke-opacity', so)
           .style('stroke-width', sw);
+    }
+
+    generateSimData(diagram: Diagram): any {
+        let layoutNodes: LayoutNode[] = this.diagram.layout.layoutModel.nodes;
+        let layoutRelationships: any[] = this.diagram.layout.layoutModel.relationships;
+
+        let nodes: any[] = [];
+        let links: any[] = [];
+
+        layoutNodes.forEach((layoutNode: LayoutNode) => {
+            let node: any = {};
+            node.layoutNode = layoutNode;
+            node.r = layoutNode.radius.insideRadius * 2;
+            nodes.push(node);
+        });
+
+        layoutRelationships.forEach((layoutRelationship: any) => {
+            let link: any = {};
+            link.layoutRelationship = layoutRelationship;
+            link.source = layoutRelationship.start.model.index;
+            link.target = layoutRelationship.end.model.index;
+            links.push(link);
+        });
+
+        return {
+            nodes: nodes,
+            links: links
+        }
+    }
+
+    startSimulation(): void {
+        console.log(`startSimulation:`);
+        var svgElement = document.getElementById('svgElement')
+
+        simulation = d3Force.forceSimulation()
+            .force("link", d3Force.forceLink().id(function(d: any) { return d.index }))
+            .force("collide",d3Force.forceCollide( function(d: any){return d.r }).iterations(16) )
+            .force("charge", d3Force.forceManyBody())
+            .force("center", d3Force.forceCenter(svgElement.clientWidth / 2, svgElement.clientHeight / 2))
+            .force("y", d3Force.forceY(0))
+            .force("x", d3Force.forceX(0));
+
+        // simNodes = svg_g.select( "g.layer.nodes" )
+        //     .selectAll("circle")
+        //     .data(this.diagram.layout.layoutModel.nodes)
+        //
+        // simLinks = svg_g.select( "g.layer.relationships" )
+        //     .selectAll("path");
+
+        simData = thiz.generateSimData(thiz.diagram);
+        console.log(`simData`, simData);
+
+        // simLinks = svg_g.append("g")
+        //     .attr("class", "links")
+        //     .selectAll("line")
+        //     .data(simData.links)
+        //     .enter()
+        //     .append("line")
+        //     .attr("stroke", "black")
+
+        simNodes = svg_g.select( "g.layer.nodes" )
+            .selectAll("circle")
+            .data(simData.nodes)
+
+        // simNodes= svg_g.append("g")
+        //     .attr("class", "nodes")
+        //     .selectAll("circle")
+        //     .data(simData.nodes)
+        //     .enter().append("circle")
+        //     .attr("r", function(d: any){  return d.r + 8 })
+        //     .call(drag()
+        //         .on("start", thiz.dragstarted)
+        //         .on("drag", thiz.dragged)
+        //         .on("end", thiz.dragended));
+
+        console.log(`simNodes`, simNodes);
+        // console.log(`simLinks`, simLinks);
+
+
+        simulation
+            .nodes(simData.nodes)
+            .on("tick", thiz.ticked)
+            .on("end", thiz.ended);
+
+        simulation.force("link")
+            .links(simData.links);
+
+        //simulation.stop();
+    }
+
+    dragstarted(d: any) {
+        // if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    dragged(d: any) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    dragended(d: any) {
+        // if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    ticked() {
+        // simLinks
+        //     .attr("x1", function(d: any) { return d.source.x; })
+        //     .attr("y1", function(d: any) { return d.source.y; })
+        //     .attr("x2", function(d: any) { return d.target.x; })
+        //     .attr("y2", function(d: any) { return d.target.y; });
+
+        simNodes
+            .attr("cx", function(d: any) { return d.x; })
+            .attr("cy", function(d: any) { return d.y; });
+
+        // console.log(`tick: ${simulationTickCount}`);
+        simulationTickCount++
+        if (simulationTickCount >= 20) {
+            thiz.ended();
+        }
+    }
+
+    ended() {
+        console.log(`ended simulation after ${simulationTickCount} ticks`);
+        simulation.stop();
+        simData.nodes.forEach((node: any) => {
+            node.layoutNode.x = node.x;
+            node.layoutNode.y = node.y;
+            node.layoutNode.model.x = node.x;
+            node.layoutNode.model.y = node.y;
+        });
+        thiz.draw();
     }
 
     draw()

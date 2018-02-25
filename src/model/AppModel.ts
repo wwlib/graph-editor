@@ -21,7 +21,7 @@ export class AppModel extends EventEmitter {
     constructor() {
         super();
         this.neo4jController = new Neo4jController();
-          this.neo4jController.getNodesAndRelationships()
+          this.neo4jController.getNodesAndRelationships(100)
               .then(data => {
                   this.graphData = data;
                   this.emit('ready', this);
