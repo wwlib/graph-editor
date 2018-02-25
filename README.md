@@ -3,9 +3,6 @@
 ### install
 `npm install`
 
-### build
-`npm run build`
-
 ### config
 create `data/neo4j-db-config.json`
 
@@ -16,6 +13,12 @@ create `data/neo4j-db-config.json`
     "password": "neo4j"
 }
 ```
+
+### build
+`npm run build`
+
+### electron
+npm install -g electron
 
 ### run
 `electron .`
