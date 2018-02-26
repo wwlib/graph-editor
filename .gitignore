@@ -3,4 +3,5 @@ node_modules
 *.log
 hide
 data/neo4j-db-config.json
+data/user
 dist/

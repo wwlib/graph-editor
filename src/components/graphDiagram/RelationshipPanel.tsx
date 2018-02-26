@@ -5,12 +5,12 @@ import {
   Node,
   Relationship
 } from 'graph-diagram';
-import { AppModel } from '../../model/AppModel';
+import AppModel from '../../model/AppModel';
 
 export interface RelationshipPanelProps { appModel: AppModel}
 export interface RelationshipPanelState { type: string, properties: string, lastUpdateTime: number }
 
-export class RelationshipPanel extends React.Component<RelationshipPanelProps, RelationshipPanelState> {
+export default class RelationshipPanel extends React.Component<RelationshipPanelProps, RelationshipPanelState> {
 
     constructor(props: any) {
         super(props);
@@ -91,7 +91,7 @@ export class RelationshipPanel extends React.Component<RelationshipPanelProps, R
 
     render() {
         return  <div className="editor-panel well" id="relationshipEditorPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship</h4>
+                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship [{this.props.appModel.activeRelationship.id}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                         <tbody>

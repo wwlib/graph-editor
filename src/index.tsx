@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { Application } from './components/Application';
+import Application from './components/Application';
 
-import { AppModel } from './model/AppModel';
+import AppModel from './model/AppModel';
 
 let model: AppModel = new AppModel();
 console.log(`index: model: `, model);
