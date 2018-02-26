@@ -5,12 +5,12 @@ import {
   Node,
   Relationship
 } from 'graph-diagram';
-import { AppModel } from '../../model/AppModel';
+import AppModel from '../../model/AppModel';
 
 export interface NodePanelProps { appModel: AppModel}
 export interface NodePanelState { type: string, properties: string, lastUpdateTime: number }
 
-export class NodePanel extends React.Component<NodePanelProps, NodePanelState> {
+export default class NodePanel extends React.Component<NodePanelProps, NodePanelState> {
 
     constructor(props: any) {
         super(props);

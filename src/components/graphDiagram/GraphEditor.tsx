@@ -28,9 +28,9 @@ import {
   d3Types
 } from 'graph-diagram';
 
-import { NodePanel } from './NodePanel';
-import { RelationshipPanel } from './RelationshipPanel';
-import { AppModel } from '../../model/AppModel';
+import NodePanel from './NodePanel';
+import RelationshipPanel from './RelationshipPanel';
+import AppModel from '../../model/AppModel';
 
 export interface GraphEditorProps {
   appModel: AppModel;
