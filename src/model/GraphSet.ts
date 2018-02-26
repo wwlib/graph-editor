@@ -30,7 +30,7 @@ export default class GraphSet {
     }
 
     getGraphIds(): string[] {
-        return Array.from( this.graphs.values() );
+        return Array.from( this.graphIds.values() );
     }
 
     loadGraphIds(): void {
