@@ -22,6 +22,7 @@ export default class AppModel extends EventEmitter {
     public neo4jController: Neo4jController;
     public graphData: any;
     public graphModel: Model;
+    public activeGraph: Graph;
     public activeNode: Node;
     public activeRelationship: Relationship;
 

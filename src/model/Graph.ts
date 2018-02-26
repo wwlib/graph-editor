@@ -23,6 +23,7 @@ export default class Graph {
 
     public uuid: string;
     public name: string;
+    public scale: number;
     public css: string;
     public config: GraphConfig;
     public d3Graph: d3Types.d3Graph;
@@ -41,6 +42,7 @@ export default class Graph {
          this.uuid = json.uuid;
       }
       this.name = json.name;
+      this.scale = json.scale || 1.0;
       this.css = json.css;
       this.config = json.config;
       this.d3Graph = json.d3Graph;
@@ -52,6 +54,7 @@ export default class Graph {
         let json: any = {};
         json.uuid = this.uuid;
         json.name = this.name;
+        json.scale = this.scale || 1.0
         json.css = this.css;
         json.config = this.config;
         json.d3Graph =  this.d3Graph;

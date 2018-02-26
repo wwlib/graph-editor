@@ -28,6 +28,7 @@ import {
   d3Types
 } from 'graph-diagram';
 
+import ToolsPanel from './ToolsPanel';
 import NodePanel from './NodePanel';
 import RelationshipPanel from './RelationshipPanel';
 import AppModel from '../../model/AppModel';
@@ -119,13 +120,19 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     componentWillMount() {
         thiz = this;
+
+        //TODO better initialization of activeNode and activeRelationship
         this.graphModel = new Model();
         let tempNode = this.graphModel.createNode();
         tempNode.x = 0;
         tempNode.y = 0;
         tempNode.caption = "New Node";
         tempNode.properties.set("name", "new");
+        let tempRelationship = this.graphModel.createRelationship(tempNode, tempNode);
+        tempRelationship.relationshipType = "";
+        tempRelationship.properties.set("name", "new");
         this.props.appModel.activeNode = tempNode;
+        this.props.appModel.activeRelationship = tempRelationship;
 
         this.setState(({lastUpdateTime}) => ({lastUpdateTime: 0}));
       }
@@ -528,18 +535,11 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     render() {
         return (
-            // <svg className="graphdiagram"
-            //   width={this.props.width} height={this.props.height}>
-            // </svg>
-            // <div>
-            // Hello
-            // </div>
             <div>
-              <div id="svgContainer"></div>
-              <NodePanel
-                  appModel={this.props.appModel} />
-             <RelationshipPanel
-                 appModel={this.props.appModel} />
+                <div id="svgContainer"></div>
+                <ToolsPanel appModel={this.props.appModel} />
+                <NodePanel appModel={this.props.appModel} />
+                <RelationshipPanel appModel={this.props.appModel} />
             </div>
         );
     }

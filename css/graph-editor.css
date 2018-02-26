@@ -31,8 +31,16 @@ body {
     background-color: #f7f7f7;
 }
 
+#toolsPanel {
+    top: 10px;
+}
+
+#nodeEditorPanel {
+    top: 100px;
+}
+
 #relationshipEditorPanel {
-    top: 310px;
+    top: 400px;
 }
 
 .modal.pop-up-editor.node {

@@ -91,7 +91,7 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
 
     render() {
         return  <div className="editor-panel well" id="relationshipEditorPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship</h4>
+                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship [{this.props.appModel.activeRelationship.id}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                         <tbody>
