@@ -1,16 +1,20 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+
 import {
   Model,
   Node,
   Relationship
 } from 'graph-diagram';
 import AppModel from '../../model/AppModel';
+import { ModalExport } from './ModalExport';
 
-export interface ToolsPanelProps { appModel: AppModel}
+export interface ToolsPanelProps { appModel: AppModel }
 export interface ToolsPanelState {
   graphName: string,
   graphScale: number,
+  showModal: boolean,
+  exportMode: string,
   lastUpdateTime: number
 }
 
@@ -22,10 +26,11 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
 
     componentWillMount() {
 
-
         this.setState({
             graphName: "example",
-            graphScale: 1.0
+            graphScale: 1.0,
+            showModal: false,
+            exportMode: "markup"
         });
 
         this.props.appModel.on('updateActiveGraph', (model: Model) => {
@@ -59,35 +64,61 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
     onButtonClicked(action: string): void {
         console.log(`onButtonClicked: ${action}`);
         switch (action) {
-            case 'save':
-                this.save();
-                break;
+            case 'exportCypher':
+            		this.openModalExport("cypher");
+            		break;
+            case 'exportMarkup':
+            		this.openModalExport("markup");
+            		break;
+            case 'exportD3':
+            		this.openModalExport("d3");
+            		break;
+            case 'exportSVG':
+            		this.openModalExport("svg");
+            		break;
+            case 'exportCSS':
+            		this.openModalExport("css");
+            		break;
+            case 'reset':
+                //
+            		break;
         }
     }
 
     save(): void {
+    }
 
+    openModalExport(exportMode: string) {
+        this.setState({ showModal: true, exportMode: exportMode });
+    }
+
+    onCloseModalExport() {
+        this.setState({ showModal: false });
     }
 
     render() {
         return  <div className="editor-panel well" id="toolsPanel">
                   <div className="tools form-inline">
-                      <button className="btn" id="add_node_button"><i className="icon-plus"></i> Node</button>
-                      <button className="btn" id="exportCypherButton">Export Cypher</button>
-                      <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 150}}
-                          onClick={this.onButtonClicked.bind(this, "exportMarkup")}>Export Markup</ReactBootstrap.Button>
-                      <a className="btn" id="downloadSvgButton" download="graph-diagram.svg">Download SVG</a>
-                      <button className="btn" id="editStyleButton">Edit Style</button>
-                      <label htmlFor="internalScale">Scale</label>
-                      <input id="internalScale" type="range" min="0.1" max="5" value="1" step="0.01" onChange={this.handleInputChange.bind(this)}/>
+                      <ModalExport showModalProp={this.state.showModal} onClose={this.onCloseModalExport.bind(this)} appModel={this.props.appModel} exportMode={this.state.exportMode} />
+                      <ReactBootstrap.Button bsStyle={'default'} key={"exportCypher"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "exportCypher")}>Cypher</ReactBootstrap.Button>
+                      <ReactBootstrap.Button bsStyle={'default'} key={"exportMarkup"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "exportMarkup")}>Markup</ReactBootstrap.Button>
+                      <ReactBootstrap.Button bsStyle={'default'} key={"exportD3"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "exportD3")}>D3</ReactBootstrap.Button>
+                      <ReactBootstrap.Button bsStyle={'default'} key={"exportSVG"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "exportSVG")}>SVG</ReactBootstrap.Button>
+                      <ReactBootstrap.Button bsStyle={'default'} key={"exportCSS"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "exportCSS")}>CSS</ReactBootstrap.Button>
+                      <ReactBootstrap.Button bsStyle={'default'} key={"reset"} style = {{width: 80}}
+                          onClick={this.onButtonClicked.bind(this, "reset")}>Reset</ReactBootstrap.Button>
+
                       <form id="graphNameForm">
                           Graph name:
-                          <input id="graphName" type="text" value={this.state.graphName}
+                          <input name="graphName" id="graphName" type="text" value={this.state.graphName}
                               onChange={this.handleInputChange.bind(this)} list="graphlist" placeholder="graph name" />
                           <datalist id="graphlist"></datalist>
                           <button className="btn" id="load" type="submit">Load/New</button>
-                          <button className="btn" id="resetGraph">Reset Graph</button>
-                          <button className="btn" id="toggleBubbles">Toggle Bubbles</button>
                       </form>
                   </div>
                 </div>;

@@ -18,12 +18,11 @@ import * as d3Force from 'd3-force';
 import {
   Diagram,
   Model,
-  ModelToD3,
   Node,
   Relationship,
   LayoutModel,
   LayoutNode,
-  //LayoutRelationship,
+  LayoutRelationship,
   Markup,
   d3Types
 } from 'graph-diagram';
@@ -40,6 +39,7 @@ export interface GraphEditorProps {
   graphData: d3Types.d3Graph;
 }
 export interface GraphEditorState {
+  scale: number;
   lastUpdateTime: number;
 }
 
@@ -72,41 +72,10 @@ let simData = JSON.parse(`
 }
 `);
 
-let testMarkup: string = `
-<ul class="graph-diagram-markup" data-internal-scale="1" data-external-scale="1">
-  <li class="node" data-node-id="0" data-x="672" data-y="193.5">
-    <span class="caption">Food</span><dl class="properties"></dl></li>
-  <li class="node" data-node-id="1" data-x="672" data-y="370.5">
-    <span class="caption">Pizza</span><dl class="properties"><dt>name</dt><dd>Special</dd></dl></li>
-  <li class="node" data-node-id="2" data-x="802" data-y="545.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>cheese</dd></dl></li>
-  <li class="node" data-node-id="3" data-x="599" data-y="566.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>Pepperoni</dd></dl></li>
-  <li class="node" data-node-id="4" data-x="439" data-y="449.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>sausage</dd></dl></li>
-  <li class="node" data-node-id="50" data-x="894" data-y="391.5">
-    <span class="caption">Crust</span><dl class="properties"><dt>name</dt><dd>Deep Dish</dd></dl></li>
-  <li class="node" data-node-id="26" data-x="488" data-y="258.5">
-    <span class="caption">User</span><dl class="properties"><dt>name</dt><dd>Michael</dd></dl></li>
-  <li class="relationship" data-from="1" data-to="0">
-    <span class="type">IS_A</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="2">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="3">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="4">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="26" data-to="1">
-    <span class="type">LIKES</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="50">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-</ul>
-`;
-
 export default class GraphEditor extends React.Component < GraphEditorProps, GraphEditorState > {
 
     public diagram: Diagram;
-    public graphModel: Model;
+    // public graphModel: Model;
     public newNode: Node = null;
     public newRelationship: Relationship = null;
 
@@ -120,34 +89,11 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     componentWillMount() {
         thiz = this;
-
-        //TODO better initialization of activeNode and activeRelationship
-        this.graphModel = new Model();
-        let tempNode = this.graphModel.createNode();
-        tempNode.x = 0;
-        tempNode.y = 0;
-        tempNode.caption = "New Node";
-        tempNode.properties.set("name", "new");
-        let tempRelationship = this.graphModel.createRelationship(tempNode, tempNode);
-        tempRelationship.relationshipType = "";
-        tempRelationship.properties.set("name", "new");
-        this.props.appModel.activeNode = tempNode;
-        this.props.appModel.activeRelationship = tempRelationship;
-
-        this.setState(({lastUpdateTime}) => ({lastUpdateTime: 0}));
+        this.setState(({scale, lastUpdateTime}) => ({scale: 1.0, lastUpdateTime: 0}));
       }
 
     componentDidMount() {
         this.setupSvg();
-
-        console.log(this.props.graphData);
-        var svgElement = document.getElementById('svgElement')
-        this.graphModel = ModelToD3.parseD3(this.props.graphData, null, {x: svgElement.clientWidth / 2, y: svgElement.clientHeight / 2})
-        // this.graphModel = this.parseMarkup(testMarkup);
-        this.props.appModel.activeNode = this.graphModel.nodeList[0];
-
-        console.log(`graphModel`, this.graphModel);
-        console.log(`d3`, ModelToD3.convert(this.graphModel));
 
         this.diagram = new Diagram()
             .scaling(null)
@@ -241,6 +187,16 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         return model;
     }
 
+    addNode() {
+        this.newNode = this.props.appModel.graphModel.createNode();
+        var svgElement = document.getElementById('svgElement')
+        this.newNode.x = svgElement.clientWidth / 2;
+        this.newNode.y = svgElement.clientHeight / 2;
+        console.log(`addNode: `, this.newNode);
+        //this.save( formatMarkup() );
+        this.draw();
+    }
+
     // bound to this via _dragStartHandler
     dragStart() {
         // console.log(`dragStart: ${event.x}, ${event.y}`, this);
@@ -262,11 +218,11 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         var node: Node = __data__.model as Node;
         if ( !this.newNode )
         {
-            this.newNode = this.graphModel.createNode();
+            this.newNode = this.props.appModel.graphModel.createNode();
             this.newNode.x = event.x;
             this.newNode.y = event.y;
             // console.log(`dragRing: this.newRelationship ${node.id}, ${this.newNode.id}`);
-            this.newRelationship = this.graphModel.createRelationship( node, this.newNode );
+            this.newRelationship = this.props.appModel.graphModel.createRelationship( node, this.newNode );
         }
         var connectionNode = this.findClosestOverlappingNode( this.newNode );
         if ( connectionNode )
@@ -291,7 +247,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             this.newNode.dragEnd();
             if ( this.newRelationship && this.newRelationship.end !== this.newNode )
             {
-                this.graphModel.deleteNode( this.newNode );
+                this.props.appModel.graphModel.deleteNode( this.newNode );
             }
         }
         this.newNode = null;
@@ -305,14 +261,14 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         var closestNode = null;
         var closestDistance = Number.MAX_VALUE;
 
-        var allNodes = this.graphModel.nodeList();
+        var allNodes = this.props.appModel.graphModel.nodeList();
 
         for ( var i = 0; i < allNodes.length; i++ )
         {
             var candidateNode = allNodes[i];
             if ( candidateNode !== node )
             {
-                var candidateDistance = node.distanceTo( candidateNode ) * this.graphModel.internalScale;
+                var candidateDistance = node.distanceTo( candidateNode ) * this.props.appModel.graphModel.internalScale;
                 if ( candidateDistance < 50 && candidateDistance < closestDistance )
                 {
                     closestNode = candidateNode;
@@ -393,7 +349,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     generateSimData(diagram: Diagram): any {
         let layoutNodes: LayoutNode[] = this.diagram.layout.layoutModel.nodes;
-        let layoutRelationships: any[] = this.diagram.layout.layoutModel.relationships;
+        let layoutRelationships: LayoutRelationship[] = this.diagram.layout.layoutModel.relationships;
 
         let nodes: any[] = [];
         let links: any[] = [];
@@ -405,7 +361,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             nodes.push(node);
         });
 
-        layoutRelationships.forEach((layoutRelationship: any) => {
+        layoutRelationships.forEach((layoutRelationship: LayoutRelationship) => {
             let link: any = {};
             link.layoutRelationship = layoutRelationship;
             link.source = layoutRelationship.start.model.index;
@@ -529,14 +485,42 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     draw()
     {
         svg_g
-            .data([this.graphModel])
+            .data([this.props.appModel.graphModel])
             .call(this.diagram.render);
+    }
+
+    onButtonClicked(action: string): void {
+        console.log(`onButtonClicked: ${action}`);
+        switch (action) {
+            case 'addNode':
+                this.addNode();
+                break;
+            case 'bubbles':
+                this.diagram.toggleRenderPropertyBubblesFlag();
+                this.draw();
+        }
+    }
+
+    changeInternalScale() {
+        var temp: any = select("#internalScale").node();
+        this.props.appModel.graphModel.internalScale = temp.value;
+        this.setState({
+            scale: temp.value
+        });
+        this.draw();
     }
 
     render() {
         return (
             <div>
                 <div id="svgContainer"></div>
+                <div id="graphEditorButtons" className="well">
+                    <ReactBootstrap.Button id="addNodeButton" bsStyle={'default'} key={"addNode"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "addNode")}><i className="icon-plus"></i> Node</ReactBootstrap.Button>
+                    <ReactBootstrap.Button id="bubblesButton" bsStyle={'default'} key={"bubbles"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
+                    <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
+                </div>
                 <ToolsPanel appModel={this.props.appModel} />
                 <NodePanel appModel={this.props.appModel} />
                 <RelationshipPanel appModel={this.props.appModel} />
