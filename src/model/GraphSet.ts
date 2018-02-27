@@ -1,77 +1,78 @@
 import fs = require('fs');
 import path = require('path');
 import AppModel from './AppModel';
-import Graph from './Graph';
+import Graph, { GraphConnection } from './Graph';
 const jsonfile = require('jsonfile');
 const ensureDir = require('ensureDir');
-const isuuid = require('isuuid');
+// const isuuid = require('isuuid');
 
 export default class GraphSet {
 
     public model: AppModel;
-    public graphs: Map<string, Graph>;
-    public graphIds: Map<string, string>;
+    // public graphs: Map<string, Graph>;
+    public graphNames: Map<string, GraphConnection>;
 
     constructor(model: AppModel) {
         this.model = model;
-        this.graphs = new Map<string, Graph>();
-        this.graphIds = new  Map<string, string>();
-        this.loadGraphIds();
+        // this.graphs = new Map<string, Graph>();
+        this.graphNames = new  Map<string, GraphConnection>();
+        // this.loadGraphNames();
     }
 
     addGraph(graph: Graph): Graph {
-        this.graphs.set(graph.uuid, graph);
-        this.graphIds.set(graph.uuid, graph.name);
+        // this.graphs.set(graph.name, graph);
+        this.graphNames.set(graph.name, graph.connection);
         return graph;
     }
 
-    getGraph(uuid: string): Graph {
-        return this.graphs.get(uuid);
+    getGraphConnectionWithName(name: string): GraphConnection {
+        return this.graphNames.get(name);
     }
 
-    getGraphIds(): string[] {
-        return Array.from( this.graphIds.values() );
+    getGraphNames(): string[] {
+        return Array.from( this.graphNames.keys() );
     }
 
-    loadGraphIds(): void {
-        let userDataPath: string = path.resolve(this.model.userDataPath);
-        fs.readdir(userDataPath, (err, files) => {
-            if (err) {
-                console.log(`loadGraphIds: error reading files in: ${userDataPath}`);
-            } else {
-                files.forEach((file: string) => {
-                    let filename: string = path.basename(file, '.json');
-                    if (isuuid(filename)) {
-                        console.log(`loadGraphIds: adding: ${file} -> ${filename}`);
-                        this.graphIds.set(filename, "na");
-                        let filepath: string = path.resolve(this.model.userDataPath, file);
-                        this.load(filepath, (err: any, obj: any) => {
-                            if (err) {
-                                console.log(`loadGraphIds: error loading: ${filepath}`);
-                            } else {
-                                console.log(`loadGraphIds: setting name: ${filepath}: ${obj.name}`);
-                                this.graphIds.set(filename, obj.name);
-                            }
-                        });
-                    }
-                });
-            }
-
+    loadGraphNames(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            let userDataPath: string = path.resolve(this.model.userDataPath);
+            fs.readdir(userDataPath, (err, files) => {
+                if (err) {
+                    console.log(`loadGraphNames: error reading files in: ${userDataPath}`);
+                    reject(err);
+                } else {
+                    files.forEach((file: string) => {
+                        let filename: string = path.basename(file, '.json');
+                            console.log(`loadGraphNames: adding: ${file} -> ${filename}`);
+                            this.graphNames.set(filename, null);
+                            // let filepath: string = path.resolve(this.model.userDataPath, file);
+                            // this.load(filepath, (err: any, obj: any) => {
+                            //     if (err) {
+                            //         console.log(`loadGraphNames: error loading: ${filepath}`);
+                            //     } else {
+                            //         console.log(`loadGraphNames: setting connection: ${filename}: ${obj.connection}`);
+                            //         this.graphNames.set(filename, obj.connection);
+                            //     }
+                            // });
+                    });
+                    resolve()
+                }
+            })
         })
     }
 
-    removeGraphId(uuid: string): void {
-        this.graphIds.delete(uuid);
+    removeGraphName(name: string): void {
+        this.graphNames.delete(name);
     }
 
     deleteGraph(graph: Graph): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            let filepath: string =  path.resolve(this.model.userDataPath, `${graph.uuid}.json`);
+            let filepath: string =  this.generateFilepathWithName(graph.name);
             fs.unlink(filepath, (err) => {
                 if (err) {
                     reject(err);
                 } else {
-                    this.removeGraphId(graph.uuid);
+                    this.removeGraphName(graph.name);
                     resolve();
                 }
             });
@@ -85,7 +86,7 @@ export default class GraphSet {
                 if (err) {
                     reject(err);
                 } else {
-                    let filepath: string =  path.resolve(this.model.userDataPath, `${graph.uuid}.json`);
+                    let filepath: string =  this.generateFilepathWithName(graph.name);
                     this.save(filepath, json, (err: any) => {
                         if (err) {
                             reject(err);
@@ -98,20 +99,39 @@ export default class GraphSet {
         });
     }
 
-    loadGraphWithUuid(uuid: string):  Promise<Graph> {
+    // loadGraphWithUuid(uuid: string):  Promise<Graph> {
+    //     return new Promise<Graph>((resolve, reject) => {
+    //         let graph: Graph;
+    //         let filepath: string =  path.resolve(this.model.userDataPath, `${uuid}.json`);
+    //         this.load(filepath, (err: any, data: any) => {
+    //             if (err) {
+    //                 reject(err);
+    //             } else {
+    //                 let graph: Graph = new Graph(uuid);
+    //                 graph.initWithJson(data);
+    //                 resolve(graph)
+    //             }
+    //         });
+    //     });
+    // }
+
+    loadGraphWithName(name: string):  Promise<Graph> {
         return new Promise<Graph>((resolve, reject) => {
-            let graph: Graph;
-            let filepath: string =  path.resolve(this.model.userDataPath, `${uuid}.json`);
+            let filepath: string =  this.generateFilepathWithName(name);
             this.load(filepath, (err: any, data: any) => {
                 if (err) {
                     reject(err);
                 } else {
-                    let graph: Graph = new Graph(uuid);
+                    let graph: Graph = new Graph();
                     graph.initWithJson(data);
                     resolve(graph)
                 }
             });
         });
+    }
+
+    generateFilepathWithName(name: string): string {
+        return path.resolve(this.model.userDataPath, `${name}.json`);
     }
 
     load(filepath: string, cb: any){

@@ -1,5 +1,6 @@
 const neo4j = require('neo4j-driver').v1;
-const config = require('../../data/neo4j-db-config.json');
+// const config = require('../../data/neo4j-db-config.json');
+import { GraphConnection } from '../model/Graph';
 
 import D3Helper from './helpers/D3Helper';
 
@@ -7,8 +8,8 @@ export default class Neo4jController {
 
     public driver: any;
 
-    constructor() {
-        this.driver = neo4j.driver(config.url, neo4j.auth.basic(config.user, config.password));
+    constructor(connection: GraphConnection) {
+        this.driver = neo4j.driver(connection.url, neo4j.auth.basic(connection.user, connection.password));
     }
 
     call(cypher:string, params?: any): Promise<any> {
@@ -23,6 +24,18 @@ export default class Neo4jController {
                     reject(error);
                 });
         });
+    }
+
+    getCypherAsD3(cypher: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.call(cypher)
+                .then(response => {
+                    resolve(D3Helper.data(response, neo4j));
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
     }
 
     getNodesAndRelationships(limit: number = 25): Promise<any> {

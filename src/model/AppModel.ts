@@ -10,7 +10,7 @@ import { EventEmitter } from "events";
 import Neo4jController from '../neo4j/Neo4jController';
 import Config from './Config';
 import GraphSet from './GraphSet';
-import Graph from './Graph';
+import Graph, { GraphConnection } from './Graph';
 
 import {
   Model,
@@ -82,70 +82,49 @@ export default class AppModel extends EventEmitter {
             }
 
             this.graphSet = new GraphSet(this);
-/*
-            let tempGraphData: any = {
-                name: "test1",
-                css: `
-text.caption {
-  fill: #FFFFFF;
-}
-
-body {
-  background-color: lightgrey;
-}
-                `,
-                config: {
-                    "type": "neo4j",
-                    "url": "bolt://localhost:7687",
-                    "user": "neo4j",
-                    "password": "jibo"
-                },
-                d3Graph: {
-                  "nodes": [{
-                    "id": "50",
-                    "labels": ["Pizza"],
-                    "properties": {
-                      "name": "Special"
-                    },
-                    "group": 1
-                  }, {
-                    "id": "9",
-                    "labels": ["Topping"],
-                    "properties": {
-                      "name": "cheese"
-                    },
-                    "group": 1
-                  }],
-                  "links": []
-                }
-            }
-            let tempGraph: Graph = new Graph();
-            tempGraph.initWithJson(tempGraphData);
-            this.graphSet.addGraph(tempGraph);
-            this.graphSet.saveGraph(tempGraph)
-                .then((graph: Graph) => {
-                    console.log(`graph saved:`, graph);
-                        this.graphSet.loadGraphWithUuid('36ad3c14-9bda-4540-83e2-b43fcd3b2b42')
-                            .then((graph: Graph) => {
-                                console.log(`graph loaded:`, graph);
-                            });
+            this.graphSet.loadGraphNames()
+                .then(() => {
+                   this.initGraphWithName(this.graphSet.getGraphNames()[1]);
                 });
-*/
-            this.neo4jController = new Neo4jController();
-              this.neo4jController.getNodesAndRelationships(100)
-                  .then(data => {
-                      this.graphData = data;
-                      var svgElement = document.getElementById('svgElement');
-                      let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
-                      let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
-                      this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
-                      // this.graphModel = this.parseMarkup(testMarkup);
-                      this.activeNode = this.graphModel.nodeList()[0];
-                      this.activeRelationship = this.graphModel.relationshipList()[0];
-                      console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
-                      this.emit('ready', this);
-                  });
         });
+    }
+
+    parseMarkup( markup: any )
+    {
+        var container: any = select( "body" ).append( "div" );
+        container.node().innerHTML = markup;
+        var model = Markup.parse( container.select("ul.graph-diagram-markup"));
+        container.remove();
+        return model;
+    }
+
+    initGraphWithName(name: string) {
+        console.log(`initGraphWithName: ${name}`);
+        let svgElement = document.getElementById('svgElement');
+        let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
+        let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
+        this.graphSet.loadGraphWithName(name)
+            .then((graph:Graph) => {
+                let connection: GraphConnection = graph.connection;
+                switch(connection.type) {
+                    case "file":
+                        console.log("initGraphWithName: type: file");
+                        break;
+                    case "neo4j":
+                        this.neo4jController = new Neo4jController(connection);
+                        // this.neo4jController.getNodesAndRelationships(50)
+                        this.neo4jController.getCypherAsD3(graph.config.initialCypher)
+                            .then(data => {
+                                this.graphData = data;
+                                this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
+                                this.activeNode = this.graphModel.nodeList()[0];
+                                this.activeRelationship = this.graphModel.relationshipList()[0];
+                                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
+                                this.emit('ready', this);
+                            });
+                        break;
+                }
+            });
     }
 
     saveActiveNode(): void {
@@ -242,3 +221,48 @@ body {
     dispose(): void {
     }
 }
+
+/*
+let tempGraphData: any = {
+    name: "example-file",
+    css: `body {
+background-color: lightgrey;
+}
+`,
+    connection: {
+        "type": "file"
+    },
+    config: {
+        data: {}
+    },
+    d3Graph: {
+      "nodes": [{
+        "id": "50",
+        "labels": ["Pizza"],
+        "properties": {
+          "name": "Special"
+        },
+        "group": 1
+      }, {
+        "id": "9",
+        "labels": ["Topping"],
+        "properties": {
+          "name": "cheese"
+        },
+        "group": 1
+      }],
+      "links": []
+    }
+}
+let tempGraph: Graph = new Graph();
+tempGraph.initWithJson(tempGraphData);
+this.graphSet.addGraph(tempGraph);
+this.graphSet.saveGraph(tempGraph)
+    .then((graph: Graph) => {
+        console.log(`graph saved:`, graph);
+            this.graphSet.loadGraphWithName('example-file')
+                .then((graph: Graph) => {
+                    console.log(`graph loaded:`, graph);
+                });
+    });
+*/

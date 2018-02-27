@@ -178,14 +178,14 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         this.startSimulation();
     }
 
-    parseMarkup( markup: any )
-    {
-        var container: any = select( "body" ).append( "div" );
-        container.node().innerHTML = markup;
-        var model = Markup.parse( container.select("ul.graph-diagram-markup"));
-        container.remove();
-        return model;
-    }
+    // parseMarkup( markup: any )
+    // {
+    //     var container: any = select( "body" ).append( "div" );
+    //     container.node().innerHTML = markup;
+    //     var model = Markup.parse( container.select("ul.graph-diagram-markup"));
+    //     container.remove();
+    //     return model;
+    // }
 
     addNode() {
         this.newNode = this.props.appModel.graphModel.createNode();
