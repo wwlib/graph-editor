@@ -28,6 +28,7 @@ import {
 } from 'graph-diagram';
 
 import ToolsPanel from './ToolsPanel';
+import CypherPanel from './CypherPanel';
 import NodePanel from './NodePanel';
 import RelationshipPanel from './RelationshipPanel';
 import AppModel from '../../model/AppModel';
@@ -522,6 +523,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />
+                <CypherPanel appModel={this.props.appModel} />
                 <NodePanel appModel={this.props.appModel} />
                 <RelationshipPanel appModel={this.props.appModel} />
             </div>

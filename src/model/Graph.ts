@@ -4,6 +4,8 @@ import {
     d3Types
 } from 'graph-diagram';
 
+import Neo4jGraphConfig from './Neo4jGraphConfig';
+
 export type GraphConnection = {
     type: string; // markup, neo4j
     url?: string;
@@ -11,17 +13,15 @@ export type GraphConnection = {
     password?: string;
 }
 
-export type GraphConfig = {
-    initialCypher?: string;
-    cyphers?: string[];
-}
+export type GraphConfig = any;
 
 export type GraphData = {
     uuid: string;
     name: string;
     connection: GraphConnection;
+    scale: number
     css: string;
-    config: GraphConfig;
+    config: GraphConfig | Neo4jGraphConfig;
     d3Graph: d3Types.d3Graph;
 }
 
@@ -45,9 +45,13 @@ export default class Graph {
       // }
       this.name = json.name;
       this.connection = json.connection;
+      if (this.connection.type == 'neeo4j') {
+          this.config = new Neo4jGraphConfig(json.config)
+      } else {
+          this.config = json.config;
+      }
       this.scale = json.scale || 1.0;
       this.css = json.css;
-      this.config = json.config;
       this.d3Graph = json.d3Graph;
 
       return this;

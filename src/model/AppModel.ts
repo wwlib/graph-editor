@@ -8,7 +8,7 @@ import {
 
 import { EventEmitter } from "events";
 import Neo4jController from '../neo4j/Neo4jController';
-import Config from './Config';
+import AppSettings from './AppSettings';
 import GraphSet from './GraphSet';
 import Graph, { GraphConnection } from './Graph';
 
@@ -20,6 +20,8 @@ import {
   Node,
   Relationship
 } from 'graph-diagram';
+
+import Neo4jGraphConfig, { SavedCypher } from './Neo4jGraphConfig';
 
 let testMarkup: string = `
 <ul class="graph-diagram-markup" data-internal-scale="1" data-external-scale="1">
@@ -55,8 +57,8 @@ let testMarkup: string = `
 
 export default class AppModel extends EventEmitter {
 
-    public config: Config;
-    public appConfigData: any;
+    public settings: AppSettings;
+    public appSettingsData: any;
     public userDataPath: string;
     public graphSet: GraphSet;
     public neo4jController: Neo4jController;
@@ -65,20 +67,22 @@ export default class AppModel extends EventEmitter {
     public activeGraph: Graph;
     public activeNode: Node;
     public activeRelationship: Relationship;
+    public cypherStatus: string;
 
     constructor() {
         super();
-        this.config = new Config();
-        this.config.load((err: any, obj: any) => {
-            if (err || !this.config.data) {
-                console.log(`AppModel: Config not found. Using default.`);
-                this.config.data = {
+        this.cypherStatus = '';
+        this.settings = new AppSettings();
+        this.settings.load((err: any, obj: any) => {
+            if (err || !this.settings.data) {
+                console.log(`AppModel: Settings not found. Using default.`);
+                this.settings.data = {
                     userDataPath: "data/user"
                 }
-                this.initWithData(this.config.data);
-                this.saveConfig();
+                this.initWithData(this.settings.data);
+                this.saveSettings();
             } else {
-                this.initWithData(this.config.data);
+                this.initWithData(this.settings.data);
             }
 
             this.graphSet = new GraphSet(this);
@@ -113,6 +117,8 @@ export default class AppModel extends EventEmitter {
                     case "neo4j":
                         this.neo4jController = new Neo4jController(connection);
                         // this.neo4jController.getNodesAndRelationships(50)
+                        console.log(`graph: `, graph);
+                        graph.config = new Neo4jGraphConfig(graph.config);
                         this.neo4jController.getCypherAsD3(graph.config.initialCypher)
                             .then(data => {
                                 this.graphData = data;
@@ -120,6 +126,8 @@ export default class AppModel extends EventEmitter {
                                 this.activeNode = this.graphModel.nodeList()[0];
                                 this.activeRelationship = this.graphModel.relationshipList()[0];
                                 console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
+                                this.activeGraph = graph;
+                                console.log(`activeGraph: `, graph);
                                 this.emit('ready', this);
                             });
                         break;
@@ -158,21 +166,21 @@ export default class AppModel extends EventEmitter {
     }
 
     initWithData(data: any): void {
-        this.appConfigData = data;
-        this.userDataPath = this.appConfigData.userDataPath;
+        this.appSettingsData = data;
+        this.userDataPath = this.appSettingsData.userDataPath;
     }
 
     get json(): any {
-        return this.appConfigData;
+        return this.appSettingsData;
     }
 
-    saveConfig(): void {
-        this.config.data = this.json;
-        this.config.save((err: any) => {
+    saveSettings(): void {
+        this.settings.data = this.json;
+        this.settings.save((err: any) => {
             if (err) {
-                console.log(`AppModel: Error saving config: `, err);
+                console.log(`AppModel: Error saving settings: `, err);
             } else {
-                console.log(`AppModel: Config saved.`)
+                console.log(`AppModel: Settings saved.`)
             }
         });
     }
@@ -216,6 +224,33 @@ export default class AppModel extends EventEmitter {
         let styleData = graphEditorStyleSheet.innerHTML;
         let css_pp = pd.css(styleData)
         return css_pp;
+    }
+
+    getSavedCypherList(): any[] {
+        console.log(`getSavedCypherList: `, this.activeGraph);
+        let result: any[] = [];
+        let neo4jGraphConfig: Neo4jGraphConfig;
+        if (this.activeGraph && this.activeGraph.connection && this.activeGraph.connection.type == "neo4j") {
+            let neo4jGraphConfig: Neo4jGraphConfig = this.activeGraph.config;
+            result = neo4jGraphConfig.savedCyphersToArray();
+        }
+        return result;
+    }
+
+    saveSlectedCypher(savedCypher: SavedCypher): number {
+        return 0
+    }
+
+    deleteSavedCypher(savedCypher: SavedCypher): number {
+        return 0
+    }
+
+    executeCypher(string: string): void {
+
+    }
+
+    executeCypherWithIndex(index: number): void {
+
     }
 
     dispose(): void {

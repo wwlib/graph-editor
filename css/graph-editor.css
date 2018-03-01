@@ -36,8 +36,22 @@ body {
     top: 10px;
 }
 
-#nodeEditorPanel {
+#cypherPanel {
     top: 100px;
+}
+
+.item {
+  background: linear-gradient(#fff, #eee);
+  line-height: 30px;
+  padding: 0 10px;
+}
+
+.even {
+  background: linear-gradient(#ddd, #ccc);
+}
+
+#nodeEditorPanel {
+    top: 400px;
 }
 
 #relationshipEditorPanel {
