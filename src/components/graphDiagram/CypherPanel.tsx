@@ -86,7 +86,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     }
 
     onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
+        // console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'run':
                 this.executeCypher(this.state.activeCypher);
@@ -101,7 +101,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     }
 
     onItemClicked(index: number): void {
-        console.log(`onButtonClicked: ${index}`);
+        // console.log(`onButtonClicked: ${index}`);
         let item: SavedCypher = this.props.appModel.getSavedCypherList()[index];
         this.setState({
             activeCypher: item,
@@ -138,7 +138,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
       if (index == this.state.selectedCyperIndex) {
           classname = 'item even';
       }
-      console.log(`renderItem ${index} ${key} ${count} ${item.name} ${item.cypher}`)
+    //   console.log(`renderItem ${index} ${key} ${count} ${item.name} ${item.cypher}`)
       return  <div key={key} className={classname} onClick={this.onItemClicked.bind(this, index)}>
                 {item.name}
               </div>;
@@ -148,7 +148,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
         this._savedCypherList = this.props.appModel.getSavedCypherList();
         this._savedCypherListLength = this._savedCypherList.length;
 
-        console.log(`render: `, this._savedCypherList);
+        // console.log(`render: `, this._savedCypherList);
 
         return  <div className="editor-panel well" id="cypherPanel">
                     <h4 className="pull-left" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>

@@ -59,9 +59,6 @@ let simData: any;
 export default class GraphEditor extends React.Component < GraphEditorProps, GraphEditorState > {
 
     public diagram: Diagram;
-    // public graphModel: Model;
-    public newNode: Node = null;
-    public newRelationship: Relationship = null;
 
     private _dragStartHandler: any = this.dragStart.bind(this);
     private _dragEndHandler: any = this.dragEnd.bind(this);
@@ -166,7 +163,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     } )
                     .attr("d", function(d: any) { return d.arrow.outline; } );
             });
-        console.log(`diagram: `, this.diagram);
         this.draw();
         this.startSimulation();
     }
@@ -185,8 +181,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     // bound to this via _dragStartHandler
     dragStart() {
-        // console.log(`dragStart: ${event.x}, ${event.y}`, this);
-        this.newNode = null;
+        this.props.appModel.newNode = null;
     }
 
     dragNode(__data__: any)
@@ -194,31 +189,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         var layoutNode: LayoutNode = __data__ as LayoutNode;
         var graphNode: Node = layoutNode.model as Node;
         graphNode.drag(event.dx, event.dy);
-        //diagram.scaling(Scaling.growButDoNotShrink);
         this.draw();
     }
 
     dragRing(__data__: any)
     {
         // console.log(`dragRing: ${event.x}, ${event.y}`);
-        var node: Node = __data__.model as Node;
-        if ( !this.newNode )
-        {
-            this.newNode = this.props.appModel.addNode(event.x, event.y);
-            // console.log(`dragRing: this.newRelationship ${node.id}, ${this.newNode.id}`);
-            this.newRelationship = this.props.appModel.addRelationship( node, this.newNode );
-        }
-        var connectionNode = this.findClosestOverlappingNode( this.newNode );
-        if ( connectionNode )
-        {
-            this.newRelationship.end = connectionNode
-        } else
-        {
-            this.newRelationship.end = this.newNode;
-        }
-        // node = this.newNode;
-        this.newNode.drag(event.dx, event.dy);
-        //diagram.scaling(Scaling.growButDoNotShrink);
+        this.props.appModel.onDragRing(__data__, event);
         this.draw();
     }
 
@@ -226,62 +203,21 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     dragEnd()
     {
         // console.log(`dragEnd: ${event.x}, ${event.y}`, this);
-        if ( this.newNode )
-        {
-            this.newNode.dragEnd();
-            if ( this.newRelationship && this.newRelationship.end !== this.newNode )
-            {
-                this.props.appModel.graphModel.deleteNode( this.newNode );
-            }
-        }
-        this.newNode = null;
-        // save( formatMarkup() );
-        //diagram.scaling(Scaling.centerOrScaleDiagramToFitSvgSmooth);
+        this.props.appModel.onDragEnd();
         this.draw();
     }
-
-    findClosestOverlappingNode( node: any )
-    {
-        var closestNode = null;
-        var closestDistance = Number.MAX_VALUE;
-
-        var allNodes = this.props.appModel.graphModel.nodeList();
-
-        for ( var i = 0; i < allNodes.length; i++ )
-        {
-            var candidateNode = allNodes[i];
-            if ( candidateNode !== node )
-            {
-                var candidateDistance = node.distanceTo( candidateNode ) * this.props.appModel.graphModel.internalScale;
-                if ( candidateDistance < 50 && candidateDistance < closestDistance )
-                {
-                    closestNode = candidateNode;
-                    closestDistance = candidateDistance;
-                }
-            }
-        }
-        return closestNode;
-    }
-
-    ////////
 
     editNode(__data__: any)
     {
         this.showNodePanel();
-        this.props.appModel.activeNode = __data__.model;
-        this.props.appModel.onUpdateActiveNode();
-        console.log(`editnode: `, this.props.appModel.activeNode);
+        this.props.appModel.activeNode = __data__.model as Node;
     }
 
     editRelationship(__data__: any)
     {
         this.showRelationshipPanel();
-        this.props.appModel.activeRelationship = __data__.model;
-        this.props.appModel.onUpdateActiveRelationship();
-        console.log(`editRelationship: `, this.props.appModel.activeRelationship);
+        this.props.appModel.activeRelationship = __data__.model as Relationship;
     }
-
-    ////////
 
     setupSvg() {
       if (svg_g) {
@@ -362,7 +298,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     startSimulation(): void {
-        console.log(`startSimulation:`);
+        // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
         simulation = d3Force.forceSimulation()
@@ -374,7 +310,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             .force("x", d3Force.forceX(0));
 
         simData = thiz.generateSimData(thiz.diagram);
-        console.log(`simData`, simData);
 
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
@@ -401,7 +336,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     ended() {
-        console.log(`ended simulation after ${simulationTickCount} ticks`);
+        // console.log(`ended simulation after ${simulationTickCount} ticks`);
         simulation.stop();
         simData.nodes.forEach((node: any) => {
             node.layoutNode.x = node.x;
@@ -420,7 +355,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'addNode':
                 this.addNode();

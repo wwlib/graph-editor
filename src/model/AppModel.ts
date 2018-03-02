@@ -33,8 +33,11 @@ export default class AppModel extends EventEmitter {
     public graphData: any;
     public graphModel: Model;
     public activeGraph: Graph;
-    public activeNode: Node;
-    public activeRelationship: Relationship;
+
+    private _activeNode: Node;
+    private _activeRelationship: Relationship;
+    private _newNode: Node;
+    private _newRelationship: Relationship;
 
     constructor() {
         super();
@@ -238,6 +241,93 @@ export default class AppModel extends EventEmitter {
 
     executeCypherWithIndex(index: number): void {
 
+    }
+
+    set activeNode(node: Node) {
+        this._activeNode = node;
+        this.onUpdateActiveNode();
+    }
+
+    get activeNode(): Node {
+        return this._activeNode;
+    }
+
+    set newNode(node: Node) {
+        this._newNode = node;
+    }
+
+    get newNode(): Node {
+        return this._newNode;
+    }
+
+    onDragRing(__data__:any, event: any): void {
+        var node: Node = __data__.model as Node;
+        if ( !this._newNode )
+        {
+            this._newNode = this.addNode(event.x, event.y);
+            this._newRelationship = this.addRelationship( node, this._newNode );
+        }
+        var connectionNode = this.findClosestOverlappingNode( this._newNode );
+        if ( connectionNode )
+        {
+            this._newRelationship.end = connectionNode
+        } else
+        {
+            this._newRelationship.end = this._newNode;
+        }
+        this._newNode.drag(event.dx, event.dy);
+    }
+
+    onDragEnd() {
+        if ( this._newNode )
+        {
+            this._newNode.dragEnd();
+            if ( this._newRelationship && this._newRelationship.end !== this._newNode )
+            {
+                this.graphModel.deleteNode( this._newNode );
+            }
+        }
+        this._newNode = null;
+    }
+
+    findClosestOverlappingNode( node: Node )
+    {
+        var closestNode = null;
+        var closestDistance = Number.MAX_VALUE;
+
+        var allNodes = this.graphModel.nodeList();
+
+        for ( var i = 0; i < allNodes.length; i++ )
+        {
+            var candidateNode = allNodes[i];
+            if ( candidateNode !== node )
+            {
+                var candidateDistance = node.distanceTo( candidateNode ) * this.graphModel.internalScale;
+                if ( candidateDistance < 50 && candidateDistance < closestDistance )
+                {
+                    closestNode = candidateNode;
+                    closestDistance = candidateDistance;
+                }
+            }
+        }
+        return closestNode;
+    }
+
+    set activeRelationship(relationship: Relationship) {
+        this._activeRelationship = relationship;
+        this.onUpdateActiveRelationship();
+    }
+
+    get activeRelationship(): Relationship {
+        return this._activeRelationship;
+    }
+
+    set newRelationship(relationship: Relationship) {
+        this._newRelationship = relationship;
+    }
+
+    get newRelationShip(): Relationship {
+        return this._newRelationship;
     }
 
     addNode(x?: number, y?: number): Node {
