@@ -75,6 +75,12 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
         switch (action) {
             case 'save':
                 this.save();
+                this.props.appModel.onRedraw();
+                break;
+            case 'delete':
+                this.props.appModel.deleteActiveNode();
+                this.props.appModel.onRedraw();
+                break;
             case 'cancel':
                 break;
         }
@@ -118,11 +124,12 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
-                    <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 80}}
+                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'danger'} key={"delete"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
-
                 </div>;
     }
 }

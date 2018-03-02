@@ -48,7 +48,7 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
         }
 
         this.setState({
-            type: this.props.appModel.activeRelationship.caption,
+            type: this.props.appModel.activeRelationship.relationshipType,
             properties: properties
         });
         this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
@@ -76,16 +76,28 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
         switch (action) {
             case 'save':
                 this.save();
+                this.props.appModel.onRedraw();
+                this.props.hideRelationshipPanelCallback();
+                break;
+            case "reverse":
+                this.props.appModel.reverseActiveRelationship();
+                this.props.appModel.onRedraw();
+                break;
+            case "delete":
+                this.props.appModel.deleteActiveRelationship();
+                this.props.appModel.onRedraw();
+                this.props.hideRelationshipPanelCallback();
                 break;
             case 'cancel':
+                this.props.hideRelationshipPanelCallback();
                 break;
         }
-        this.props.hideRelationshipPanelCallback();
+
     }
 
     save(): void {
         let relationship: Relationship = this.props.appModel.activeRelationship;
-        relationship.caption = this.state.type;
+        relationship.relationshipType = this.state.type;
         relationship.properties.clearAll();
         this.state.properties.split("\n").forEach((line: string) => {
             let tokens = line.split(/: */);
@@ -120,8 +132,12 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
-                    <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 80}}
+                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'warning'} key={"reverse"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "reverse")}>Reverse</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'danger'} key={"delete"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
 

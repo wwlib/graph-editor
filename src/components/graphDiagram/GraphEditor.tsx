@@ -54,27 +54,7 @@ let simulation: any;
 let simulationTickCount: number = 0;
 let simNodes: any;
 let simLinks: any;
-let simData = JSON.parse(`
-{
-  "nodes": [{
-      "r": 17
-  }, {
-      "r": 8
-  }, {
-      "r": 27
-  }],
-  "links": [{
-      "source": "0",
-      "target": "1"
-  }, {
-      "source": "1",
-      "target": "2"
-  }, {
-      "source": "2",
-      "target": "0"
-  }]
-}
-`);
+let simData: any;
 
 export default class GraphEditor extends React.Component < GraphEditorProps, GraphEditorState > {
 
@@ -90,6 +70,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     private _editNodeHandler: any = this.editNode.bind(this);
     private _editRelationshipHandler: any = this.editRelationship.bind(this);
+    private _onRedrawGraphHandler: any = this.onRedrawGraph.bind(this);
 
     componentWillMount() {
         thiz = this;
@@ -100,6 +81,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             showCypherPanel: true,
             lastUpdateTime: 0
         });
+
+        this.props.appModel.on('redrawGraph', this._onRedrawGraphHandler);
       }
 
     componentDidMount() {
@@ -188,14 +171,16 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         this.startSimulation();
     }
 
-    addNode() {
-        this.newNode = this.props.appModel.graphModel.createNode();
-        var svgElement = document.getElementById('svgElement')
-        this.newNode.x = svgElement.clientWidth / 2;
-        this.newNode.y = svgElement.clientHeight / 2;
-        console.log(`addNode: `, this.newNode);
-        //this.save( formatMarkup() );
+    componentWillUnmount() {
+        this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
+    }
+
+    onRedrawGraph(): void {
         this.draw();
+    }
+
+    addNode() {
+        this.props.appModel.addNode();
     }
 
     // bound to this via _dragStartHandler
@@ -219,11 +204,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         var node: Node = __data__.model as Node;
         if ( !this.newNode )
         {
-            this.newNode = this.props.appModel.graphModel.createNode();
-            this.newNode.x = event.x;
-            this.newNode.y = event.y;
+            this.newNode = this.props.appModel.addNode(event.x, event.y);
             // console.log(`dragRing: this.newRelationship ${node.id}, ${this.newNode.id}`);
-            this.newRelationship = this.props.appModel.graphModel.createRelationship( node, this.newNode );
+            this.newRelationship = this.props.appModel.addRelationship( node, this.newNode );
         }
         var connectionNode = this.findClosestOverlappingNode( this.newNode );
         if ( connectionNode )

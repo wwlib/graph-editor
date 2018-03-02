@@ -131,6 +131,10 @@ export default class AppModel extends EventEmitter {
         this.emit('updateActiveRelationship', this);
     }
 
+    onRedraw(): void {
+        this.emit('redrawGraph', this);
+    }
+
     initWithData(data: any): void {
         this.appSettingsData = data;
         this.userDataPath = this.appSettingsData.userDataPath;
@@ -234,6 +238,47 @@ export default class AppModel extends EventEmitter {
 
     executeCypherWithIndex(index: number): void {
 
+    }
+
+    addNode(x?: number, y?: number): Node {
+        var svgElement = document.getElementById('svgElement');
+        x = x || svgElement.clientWidth / 2;
+        y = y || svgElement.clientHeight / 2;
+        this.activeNode = this.graphModel.createNode();
+        this.activeNode.x = x;
+        this.activeNode.y = y;
+        console.log(`addNode: `, this.activeNode);
+        //this.save( formatMarkup() );
+        this.onRedraw();
+        return this.activeNode;
+    }
+
+    addRelationship(start: Node, end: Node): Relationship {
+        return this.graphModel.createRelationship(start, end);
+    }
+
+    reverseActiveRelationship(): void {
+        if (this.activeRelationship) {
+            this.activeRelationship.reverse();
+        }
+    }
+
+    deleteActiveNode()
+    {
+        if (this.activeNode) {
+            this.graphModel.deleteNode(this.activeNode);
+            // save( formatMarkup() );
+            this.onRedraw();
+        }
+    }
+
+    deleteActiveRelationship()
+    {
+        if (this.activeRelationship) {
+            this.graphModel.deleteRelationship(this.activeRelationship);
+            // save( formatMarkup() );
+            this.onRedraw();
+        }
     }
 
     dispose(): void {

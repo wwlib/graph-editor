@@ -17,6 +17,8 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
 
     private _savedCypherList: SavedCypher[];
     private _savedCypherListLength: number;
+    private _onCypherExecutedHandler: any = this.onCypherExecuted.bind(this);
+    private _onCypherExecutionErrorHandler: any = this.onCypherExecutionErrorHandler.bind(this);
 
     constructor(props: any) {
         super(props);
@@ -30,20 +32,32 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
             visible: true
         });
 
-        this.props.appModel.on('onCypherExecuted', (data: any) => {
-            this.setState({
-                status: JSON.stringify(data)
-            });
-        });
-
-        this.props.appModel.on('onCypherExecutionError', (error: any) => {
-            this.setState({
-                status: error
-            });
-        });
+        this.props.appModel.on('onCypherExecuted', this._onCypherExecutedHandler);
+        this.props.appModel.on('onCypherExecutionError', this._onCypherExecutionErrorHandler);
     }
 
     componentDidMount() {
+
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('onCypherExecuted', this._onCypherExecutedHandler);
+        this.props.appModel.removeListener('onCypherExecutionError', this._onCypherExecutionErrorHandler);
+    }
+
+    onCypherExecuted(data: any): void {
+        this.setState({
+            status: JSON.stringify(data)
+        });
+    }
+
+    onCypherExecutionErrorHandler(error: any): void {
+        this.setState({
+            status: error
+        });
+    }
+
+    onCypherExecutionHandler(): void {
 
     }
 
