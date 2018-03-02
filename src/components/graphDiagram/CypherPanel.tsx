@@ -15,6 +15,9 @@ export interface CypherPanelState { activeCypher: SavedCypher, selectedCyperInde
 
 export default class CypherPanel extends React.Component<CypherPanelProps, CypherPanelState> {
 
+    private _savedCypherList: SavedCypher[];
+    private _savedCypherListLength: number;
+
     constructor(props: any) {
         super(props);
     }
@@ -27,13 +30,16 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
             visible: true
         });
 
-        this.props.appModel.on('updateCypherStatus', (model: Model) => {
-
-
+        this.props.appModel.on('onCypherExecuted', (data: any) => {
             this.setState({
-                status: this.props.appModel.cypherStatus
+                status: JSON.stringify(data)
             });
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
+        });
+
+        this.props.appModel.on('onCypherExecutionError', (error: any) => {
+            this.setState({
+                status: error
+            });
         });
     }
 
@@ -52,6 +58,11 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
             case 'cypher':
                 savedCypher.cypher = nativeEvent.target.value
                 break;
+            case 'cypherStatus':
+                this.setState({
+                    status: nativeEvent.target.value,
+                });
+                break;
         }
         this.setState({ activeCypher: savedCypher});
     }
@@ -64,10 +75,10 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
         console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'run':
-                this.executeCypher();
+                this.executeCypher(this.state.activeCypher);
                 break;
             case 'save':
-                this.saveSlectedCypher(this.state.activeCypher);
+                this.saveSelectedCypher(this.state.activeCypher);
                 break;
             case 'delete':
                 this.deleteSlectedCypher(this.state.activeCypher.index);
@@ -84,11 +95,11 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
         });
     }
 
-    executeCypher(): void {
-
+    executeCypher(activeCypher: SavedCypher): void {
+        this.props.appModel.executeCypher(activeCypher.cypher);
     }
 
-    saveSlectedCypher(savedCypher: SavedCypher): void {
+    saveSelectedCypher(savedCypher: SavedCypher): void {
         let newIndex: number = this.props.appModel.saveSlectedCypher(savedCypher);
         this.setState({
             activeCypher: this.props.appModel.getSavedCypherList()[newIndex],
@@ -105,10 +116,10 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     }
 
     renderItem(index: number, key: string) {
-      let item: SavedCypher = this.props.appModel.getSavedCypherList()[index];
+      let item: SavedCypher = this._savedCypherList[index];
       let itemName: string = item.name;
       let itemCypher: string = item.cypher;
-      let count: number = this.props.appModel.getSavedCypherList().length;
+      let count: number = this._savedCypherListLength;
       let classname: string = 'item'; // 'item' + (index % 2 ? '' : ' even')
       if (index == this.state.selectedCyperIndex) {
           classname = 'item even';
@@ -120,7 +131,10 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
    }
 
     render() {
-        console.log(`render: `, this.props.appModel.getSavedCypherList());
+        this._savedCypherList = this.props.appModel.getSavedCypherList();
+        this._savedCypherListLength = this._savedCypherList.length;
+
+        console.log(`render: `, this._savedCypherList);
 
         return  <div className="editor-panel well" id="cypherPanel">
                     <h4 className="pull-left" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>
@@ -128,24 +142,33 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                             <tbody>
                             <tr>
+                            <td>name:</td>
                             <td>
                             <input name="cypherName" value={this.state.activeCypher.name} onChange={this.handleInputChange.bind(this)} style={{width: 300}} />
                             </td>
                             </tr>
                             <tr>
+                            <td>cypher:</td>
                             <td>
                             <input name="cypher" value={this.state.activeCypher.cypher} onChange={this.handleInputChange.bind(this)} style={{width: 300}} />
                             </td>
                             </tr>
                             <tr>
+                            <td>saved:</td>
                             <td>
                             <div style={{overflow: 'auto', maxHeight: 100}}>
                                 <ReactList
                                   itemRenderer={this.renderItem.bind(this)}
-                                  length={this.props.appModel.getSavedCypherList().length}
+                                  length={this._savedCypherListLength}
                                   type='uniform'
                                 />
                             </div>
+                            </td>
+                            </tr>
+                            <tr>
+                            <td>status:</td>
+                            <td>
+                            <textarea name="cypherStatus" value={this.state.status} onChange={this.handleInputChange.bind(this)} style={{width: 300, height: 100}} />
                             </td>
                             </tr>
                         </tbody>

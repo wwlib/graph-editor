@@ -7,10 +7,12 @@ import {
 } from 'graph-diagram';
 import AppModel from '../../model/AppModel';
 
-export interface RelationshipPanelProps { appModel: AppModel}
+export interface RelationshipPanelProps { appModel: AppModel, hideRelationshipPanelCallback: any}
 export interface RelationshipPanelState { type: string, properties: string, lastUpdateTime: number }
 
 export default class RelationshipPanel extends React.Component<RelationshipPanelProps, RelationshipPanelState> {
+
+    private _setPropertiesHandler: any = this.setProperties.bind(this);
 
     constructor(props: any) {
         super(props);
@@ -24,26 +26,32 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
             properties: ""
         });
 
-        this.props.appModel.on('updateActiveRelationship', (model: Model) => {
-            let properties: string = "";
-            if (this.props.appModel.activeRelationship.properties.listEditable().length > 0) {
-              properties = this.props.appModel.activeRelationship.properties.listEditable().reduce(
-                function(previous: string, property: any) {
-                  return previous + property.key + ": " + property.value + "\n";
-                }, ""
-              );
-            }
-
-            this.setState({
-                type: this.props.appModel.activeRelationship.caption,
-                properties: properties
-            });
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
-        });
+        this.props.appModel.on('updateActiveRelationship', this._setPropertiesHandler);
     }
 
     componentDidMount() {
 
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('updateActiveRelationship', this._setPropertiesHandler);
+    }
+
+    setProperties(model: Model): void {
+        let properties: string = "";
+        if (this.props.appModel.activeRelationship.properties.listEditable().length > 0) {
+          properties = this.props.appModel.activeRelationship.properties.listEditable().reduce(
+            function(previous: string, property: any) {
+              return previous + property.key + ": " + property.value + "\n";
+            }, ""
+          );
+        }
+
+        this.setState({
+            type: this.props.appModel.activeRelationship.caption,
+            properties: properties
+        });
+        this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
     }
 
     handleInputChange(event: any) {
@@ -69,7 +77,10 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
             case 'save':
                 this.save();
                 break;
+            case 'cancel':
+                break;
         }
+        this.props.hideRelationshipPanelCallback();
     }
 
     save(): void {
@@ -109,8 +120,10 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
-                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 150}}
+                    <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
 
                 </div>;
     }

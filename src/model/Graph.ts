@@ -1,5 +1,3 @@
-//import * as UUID from 'uuid';
-import { v4 as UUID } from 'uuid';
 import {
     d3Types
 } from 'graph-diagram';
@@ -27,7 +25,6 @@ export type GraphData = {
 
 export default class Graph {
 
-    // public uuid: string;
     public name: string;
     public connection: GraphConnection;
     public scale: number;
@@ -40,9 +37,6 @@ export default class Graph {
     }
 
     initWithJson(json: any): Graph {
-      // if (json.uuid) {
-      //    this.uuid = json.uuid;
-      // }
       this.name = json.name;
       this.connection = json.connection;
       if (this.connection.type == 'neeo4j') {
@@ -59,7 +53,6 @@ export default class Graph {
 
     toJSON(): any {
         let json: any = {};
-        // json.uuid = this.uuid;
         json.name = this.name;
         json.connection = this.connection;
         json.scale = this.scale || 1.0

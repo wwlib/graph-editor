@@ -7,43 +7,50 @@ import {
 } from 'graph-diagram';
 import AppModel from '../../model/AppModel';
 
-export interface NodePanelProps { appModel: AppModel}
+export interface NodePanelProps { appModel: AppModel, hideNodePanelCallback: any}
 export interface NodePanelState { type: string, properties: string, lastUpdateTime: number }
 
 export default class NodePanel extends React.Component<NodePanelProps, NodePanelState> {
+
+    private _setPropertiesHandler: any = this.setProperties.bind(this);
 
     constructor(props: any) {
         super(props);
     }
 
     componentWillMount() {
-
-
+        console.log(`nodePanel: componentWillMount:`, this);
         this.setState({
             type: "",
             properties: ""
         });
 
-        this.props.appModel.on('updateActiveNode', (model: Model) => {
-            let properties: string = "";
-            if (this.props.appModel.activeNode.properties.listEditable().length > 0) {
-              properties = this.props.appModel.activeNode.properties.listEditable().reduce(
-                function(previous: string, property: any) {
-                  return previous + property.key + ": " + property.value + "\n";
-                }, ""
-              );
-            }
+        this.props.appModel.on('updateActiveNode', this._setPropertiesHandler);
+    }
 
-            this.setState({
-                type: this.props.appModel.activeNode.caption,
-                properties: properties
-            });
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
+    setProperties(model: Model): void {
+        let properties: string = "";
+        if (this.props.appModel.activeNode.properties.listEditable().length > 0) {
+          properties = this.props.appModel.activeNode.properties.listEditable().reduce(
+            function(previous: string, property: any) {
+              return previous + property.key + ": " + property.value + "\n";
+            }, ""
+          );
+        }
+
+        this.setState({
+            type: this.props.appModel.activeNode.caption,
+            properties: properties,
+            lastUpdateTime: new Date().getTime()
         });
     }
 
     componentDidMount() {
 
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('updateActiveNode', this._setPropertiesHandler);
     }
 
     handleInputChange(event: any) {
@@ -68,8 +75,10 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
         switch (action) {
             case 'save':
                 this.save();
+            case 'cancel':
                 break;
         }
+        this.props.hideNodePanelCallback();
     }
 
     save(): void {
@@ -109,8 +118,10 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
-                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 150}}
+                    <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
 
                 </div>;
     }

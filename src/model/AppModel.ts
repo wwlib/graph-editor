@@ -23,38 +23,6 @@ import {
 
 import Neo4jGraphConfig, { SavedCypher } from './Neo4jGraphConfig';
 
-let testMarkup: string = `
-<ul class="graph-diagram-markup" data-internal-scale="1" data-external-scale="1">
-  <li class="node" data-node-id="0" data-x="672" data-y="193.5">
-    <span class="caption">Food</span><dl class="properties"></dl></li>
-  <li class="node" data-node-id="1" data-x="672" data-y="370.5">
-    <span class="caption">Pizza</span><dl class="properties"><dt>name</dt><dd>Special</dd></dl></li>
-  <li class="node" data-node-id="2" data-x="802" data-y="545.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>cheese</dd></dl></li>
-  <li class="node" data-node-id="3" data-x="599" data-y="566.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>Pepperoni</dd></dl></li>
-  <li class="node" data-node-id="4" data-x="439" data-y="449.5">
-    <span class="caption">Topping</span><dl class="properties"><dt>name</dt><dd>sausage</dd></dl></li>
-  <li class="node" data-node-id="50" data-x="894" data-y="391.5">
-    <span class="caption">Crust</span><dl class="properties"><dt>name</dt><dd>Deep Dish</dd></dl></li>
-  <li class="node" data-node-id="26" data-x="488" data-y="258.5">
-    <span class="caption">User</span><dl class="properties"><dt>name</dt><dd>Michael</dd></dl></li>
-  <li class="relationship" data-from="1" data-to="0">
-    <span class="type">IS_A</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="2">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="3">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="4">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="26" data-to="1">
-    <span class="type">LIKES</span><dl class="properties"></dl></li>
-  <li class="relationship" data-from="1" data-to="50">
-    <span class="type">HAS</span><dl class="properties"></dl></li>
-</ul>
-`;
-
-
 export default class AppModel extends EventEmitter {
 
     public settings: AppSettings;
@@ -67,11 +35,9 @@ export default class AppModel extends EventEmitter {
     public activeGraph: Graph;
     public activeNode: Node;
     public activeRelationship: Relationship;
-    public cypherStatus: string;
 
     constructor() {
         super();
-        this.cypherStatus = '';
         this.settings = new AppSettings();
         this.settings.load((err: any, obj: any) => {
             if (err || !this.settings.data) {
@@ -157,11 +123,11 @@ export default class AppModel extends EventEmitter {
         this.emit('updateModel', this);
     }
 
-    onUpdateActiveNode(event: any): void {
+    onUpdateActiveNode(event?: any): void {
         this.emit('updateActiveNode', this);
     }
 
-    onUpdateActiveRelationship(event: any): void {
+    onUpdateActiveRelationship(event?: any): void {
         this.emit('updateActiveRelationship', this);
     }
 
@@ -245,7 +211,24 @@ export default class AppModel extends EventEmitter {
         return 0
     }
 
-    executeCypher(string: string): void {
+    executeCypher(cypher: string): void {
+        console.log(`executeCypher: ${cypher}`);
+        let svgElement = document.getElementById('svgElement');
+        let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
+        let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
+        this.neo4jController.getCypherAsD3(cypher)
+            .then(data => {
+                // this.graphData = data;
+                // this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
+                // this.activeNode = this.graphModel.nodeList()[0];
+                // this.activeRelationship = this.graphModel.relationshipList()[0];
+                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
+                // console.log(`activeGraph: `, this.activeGraph);
+                this.emit('onCypherExecuted', data);
+            })
+            .catch((error: any) => {
+                this.emit('onCypherExecutionError', error);
+            })
 
     }
 
@@ -256,48 +239,3 @@ export default class AppModel extends EventEmitter {
     dispose(): void {
     }
 }
-
-/*
-let tempGraphData: any = {
-    name: "example-file",
-    css: `body {
-background-color: lightgrey;
-}
-`,
-    connection: {
-        "type": "file"
-    },
-    config: {
-        data: {}
-    },
-    d3Graph: {
-      "nodes": [{
-        "id": "50",
-        "labels": ["Pizza"],
-        "properties": {
-          "name": "Special"
-        },
-        "group": 1
-      }, {
-        "id": "9",
-        "labels": ["Topping"],
-        "properties": {
-          "name": "cheese"
-        },
-        "group": 1
-      }],
-      "links": []
-    }
-}
-let tempGraph: Graph = new Graph();
-tempGraph.initWithJson(tempGraphData);
-this.graphSet.addGraph(tempGraph);
-this.graphSet.saveGraph(tempGraph)
-    .then((graph: Graph) => {
-        console.log(`graph saved:`, graph);
-            this.graphSet.loadGraphWithName('example-file')
-                .then((graph: Graph) => {
-                    console.log(`graph loaded:`, graph);
-                });
-    });
-*/

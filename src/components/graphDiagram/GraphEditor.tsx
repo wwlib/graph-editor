@@ -41,6 +41,9 @@ export interface GraphEditorProps {
 }
 export interface GraphEditorState {
   scale: number;
+  showNodePanel: boolean;
+  showRelationshipPanel: boolean;
+  showCypherPanel: boolean;
   lastUpdateTime: number;
 }
 
@@ -90,7 +93,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     componentWillMount() {
         thiz = this;
-        this.setState(({scale, lastUpdateTime}) => ({scale: 1.0, lastUpdateTime: 0}));
+        this.setState({
+            scale: 1.0,
+            showNodePanel: false,
+            showRelationshipPanel: false,
+            showCypherPanel: true,
+            lastUpdateTime: 0
+        });
       }
 
     componentDidMount() {
@@ -178,15 +187,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         this.draw();
         this.startSimulation();
     }
-
-    // parseMarkup( markup: any )
-    // {
-    //     var container: any = select( "body" ).append( "div" );
-    //     container.node().innerHTML = markup;
-    //     var model = Markup.parse( container.select("ul.graph-diagram-markup"));
-    //     container.remove();
-    //     return model;
-    // }
 
     addNode() {
         this.newNode = this.props.appModel.graphModel.createNode();
@@ -284,15 +284,17 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     editNode(__data__: any)
     {
+        this.showNodePanel();
         this.props.appModel.activeNode = __data__.model;
-        this.props.appModel.onUpdateActiveNode(null);
+        this.props.appModel.onUpdateActiveNode();
         console.log(`editnode: `, this.props.appModel.activeNode);
     }
 
     editRelationship(__data__: any)
     {
-      this.props.appModel.activeRelationship = __data__.model;
-      this.props.appModel.onUpdateActiveRelationship(null);
+        this.showRelationshipPanel();
+        this.props.appModel.activeRelationship = __data__.model;
+        this.props.appModel.onUpdateActiveRelationship();
         console.log(`editRelationship: `, this.props.appModel.activeRelationship);
     }
 
@@ -388,42 +390,12 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             .force("y", d3Force.forceY(0))
             .force("x", d3Force.forceX(0));
 
-        // simNodes = svg_g.select( "g.layer.nodes" )
-        //     .selectAll("circle")
-        //     .data(this.diagram.layout.layoutModel.nodes)
-        //
-        // simLinks = svg_g.select( "g.layer.relationships" )
-        //     .selectAll("path");
-
         simData = thiz.generateSimData(thiz.diagram);
         console.log(`simData`, simData);
-
-        // simLinks = svg_g.append("g")
-        //     .attr("class", "links")
-        //     .selectAll("line")
-        //     .data(simData.links)
-        //     .enter()
-        //     .append("line")
-        //     .attr("stroke", "black")
 
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
             .data(simData.nodes)
-
-        // simNodes= svg_g.append("g")
-        //     .attr("class", "nodes")
-        //     .selectAll("circle")
-        //     .data(simData.nodes)
-        //     .enter().append("circle")
-        //     .attr("r", function(d: any){  return d.r + 8 })
-        //     .call(drag()
-        //         .on("start", thiz.dragstarted)
-        //         .on("drag", thiz.dragged)
-        //         .on("end", thiz.dragended));
-
-        console.log(`simNodes`, simNodes);
-        // console.log(`simLinks`, simLinks);
-
 
         simulation
             .nodes(simData.nodes)
@@ -432,39 +404,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
         simulation.force("link")
             .links(simData.links);
-
-        //simulation.stop();
-    }
-
-    dragstarted(d: any) {
-        // if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    dragged(d: any) {
-        d.fx = event.x;
-        d.fy = event.y;
-    }
-
-    dragended(d: any) {
-        // if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
     }
 
     ticked() {
-        // simLinks
-        //     .attr("x1", function(d: any) { return d.source.x; })
-        //     .attr("y1", function(d: any) { return d.source.y; })
-        //     .attr("x2", function(d: any) { return d.target.x; })
-        //     .attr("y2", function(d: any) { return d.target.y; });
-
         simNodes
             .attr("cx", function(d: any) { return d.x; })
             .attr("cy", function(d: any) { return d.y; });
 
-        // console.log(`tick: ${simulationTickCount}`);
         simulationTickCount++
         if (simulationTickCount >= 20) {
             thiz.ended();
@@ -511,7 +457,43 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         this.draw();
     }
 
+    hideCypherpPanel(): void {
+        this.setState({
+            showCypherPanel: false
+        });
+    }
+
+    showNodePanel(): void {
+        this.setState({
+            showNodePanel: true,
+            showRelationshipPanel: false
+        });
+    }
+
+    hideNodePanel(): void {
+        this.setState({
+            showNodePanel: false
+        });
+    }
+
+    showRelationshipPanel(): void {
+        this.setState({
+            showNodePanel: false,
+            showRelationshipPanel: true
+        });
+    }
+
+    hideRelationshipPanel(): void {
+        this.setState({
+            showRelationshipPanel: false
+        });
+    }
+
     render() {
+        let nodePanel: JSX.Element = this.state.showNodePanel && <NodePanel appModel={this.props.appModel} hideNodePanelCallback={this.hideNodePanel.bind(this)} />;
+        let relationshipPanel: JSX.Element = this.state.showRelationshipPanel && <RelationshipPanel appModel={this.props.appModel} hideRelationshipPanelCallback={this.hideRelationshipPanel.bind(this)} />;
+        let cypherPanel: JSX.Element = this.state.showCypherPanel && <CypherPanel appModel={this.props.appModel} />;
+
         return (
             <div>
                 <div id="svgContainer"></div>
@@ -523,9 +505,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />
-                <CypherPanel appModel={this.props.appModel} />
-                <NodePanel appModel={this.props.appModel} />
-                <RelationshipPanel appModel={this.props.appModel} />
+                {cypherPanel}
+                {nodePanel}
+                {relationshipPanel}
             </div>
         );
     }
