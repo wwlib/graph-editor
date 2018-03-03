@@ -93,8 +93,8 @@ export default class AppModel extends EventEmitter {
                                 this.graphData = data;
                                 this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
                                 this.activeNode = this.graphModel.nodeList()[0];
-                                this.activeRelationship = this.graphModel.relationshipList()[0];
-                                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
+                                this._activeRelationship = this.graphModel.relationshipList()[0];
+                                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                                 this.activeGraph = graph;
                                 console.log(`activeGraph: `, graph);
                                 this.emit('ready', this);
@@ -114,12 +114,31 @@ export default class AppModel extends EventEmitter {
     }
 
     saveActiveRelationship(): void {
-        // let properties: any = this.activeRelationship.properties.toJSON();
+        // let properties: any = this._activeRelationship.properties.toJSON();
         // console.log(properties);
         this.neo4jController.updateRelationship(this._activeRelationship)
             .then((response: any) => {
                 console.log(response);
             });
+    }
+
+    reverseActiveRelationship(): void {
+        if (this._activeRelationship) {
+            if (this.activeGraph.type == "neo4j") {
+                this.neo4jController.reverseRelationship(this._activeRelationship)
+                    .then((result: any) => {
+                        console.log(result);
+                        this._activeRelationship.reverse();
+                        this.onRedraw();
+                    })
+                    .catch((error: any) => {
+                        console.log(error);
+                    })
+            } else {
+                this._activeRelationship.reverse();
+                this.onRedraw();
+            }
+        }
     }
 
     onUpdateData(event: any): void {
@@ -236,8 +255,8 @@ export default class AppModel extends EventEmitter {
                 // this.graphData = data;
                 // this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
                 // this.activeNode = this.graphModel.nodeList()[0];
-                // this.activeRelationship = this.graphModel.relationshipList()[0];
-                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this.activeRelationship);
+                // this._activeRelationship = this.graphModel.relationshipList()[0];
+                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                 // console.log(`activeGraph: `, this.activeGraph);
                 this.emit('onCypherExecuted', data);
             })
@@ -359,7 +378,7 @@ export default class AppModel extends EventEmitter {
     }
 
     getActiveRelationshipLabel(): string {
-        return this.activeRelationship.relationshipType;
+        return this._activeRelationship.relationshipType;
     }
 
     getActiveRelationshipPropertiesAsText(): string {
@@ -372,7 +391,6 @@ export default class AppModel extends EventEmitter {
         }
         return properties;
     }
-
 
     getActiveNodeLabel(): string {
         return this.activeNode.caption;
@@ -426,12 +444,6 @@ export default class AppModel extends EventEmitter {
         return relationship;
     }
 
-    reverseActiveRelationship(): void {
-        if (this.activeRelationship) {
-            this.activeRelationship.reverse();
-        }
-    }
-
     deleteLocalNode(node: Node): void {
         this.graphModel.deleteNode(node);
         if (node == this._newNode) {
@@ -441,32 +453,43 @@ export default class AppModel extends EventEmitter {
 
     deleteActiveNode()
     {
-        if (this.activeNode) {
+        if (this._activeNode) {
             if (this.activeGraph.type == "neo4j") {
-                this.neo4jController.deleteNode(this.activeNode)
+                this.neo4jController.deleteNode(this._activeNode)
                     .then((result: any) => {
                         console.log(result);
-                        this.graphModel.deleteNode(this.activeNode);
+                        this.graphModel.deleteNode(this._activeNode);
                         this.onRedraw();
                     })
                     .catch((error: any) => {
                         console.log(error);
                     })
             } else {
-                this.graphModel.deleteNode(this.activeNode);
+                this.graphModel.deleteNode(this._activeNode);
                 // save( formatMarkup() );
                 this.onRedraw();
             }
-
         }
     }
 
     deleteActiveRelationship()
     {
-        if (this.activeRelationship) {
-            this.graphModel.deleteRelationship(this.activeRelationship);
-            // save( formatMarkup() );
-            this.onRedraw();
+        if (this._activeRelationship) {
+            if (this.activeGraph.type == "neo4j") {
+                this.neo4jController.deleteRelationship(this._activeRelationship)
+                    .then((result: any) => {
+                        console.log(result);
+                        this.graphModel.deleteRelationship(this._activeRelationship);
+                        this.onRedraw();
+                    })
+                    .catch((error: any) => {
+                        console.log(error);
+                    })
+            } else {
+                this.graphModel.deleteRelationship(this._activeRelationship);
+                // save( formatMarkup() );
+                this.onRedraw();
+            }
         }
     }
 

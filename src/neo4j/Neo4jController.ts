@@ -128,6 +128,30 @@ export default class Neo4jController {
             });
     }
 
+    reverseRelationship(relationship: Relationship): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let label: string = relationship.relationshipType;
+            let properties: any = relationship.properties.toJSON();
+            let cypher: string = `
+                match (start)-[r]->(end) WHERE ID(r) = ${relationship.id}
+                with start, r, end
+                create (end)-[r2:${label}]->(start)
+                set r2 = { props }
+                with r
+                delete r
+            `;
+            console.log(JSON.stringify(properties, null, 2));
+            console.log(cypher);
+            this.call(cypher, {props: properties})
+                .then(response => {
+                    resolve(D3Helper.data(response, neo4j));
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
+    }
+
     addNode(node: Node): Promise<any> {
         return new Promise((resolve, reject) => {
             let cypher: string = `create (n) return n`;
@@ -148,7 +172,6 @@ export default class Neo4jController {
 
     deleteNode(node: Node): Promise<any> {
         return new Promise((resolve, reject) => {
-            // let id: number = Number(node.id);
             let cypher: string = `match (n) where id(n) = ${node.id} detach delete n`;
             console.log(cypher);
             this.call(cypher)
@@ -178,6 +201,24 @@ RETURN r`;
                 .then(response => {
                     let result: any = {
                         localRelationship: relationship,
+                        d3: D3Helper.data(response, neo4j)
+                    }
+                    resolve(result);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
+    }
+
+    deleteRelationship(relationship: Relationship): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let cypher: string = `match ()-[r]-() Where ID(r)=${relationship.id} Delete r`;
+            console.log(cypher);
+            this.call(cypher)
+                .then(response => {
+                    let result: any = {
+                        localRelatiohship: relationship,
                         d3: D3Helper.data(response, neo4j)
                     }
                     resolve(result);
