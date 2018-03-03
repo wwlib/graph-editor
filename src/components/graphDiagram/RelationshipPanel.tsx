@@ -84,20 +84,7 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
     }
 
     save(): void {
-        let relationship: Relationship = this.props.appModel.activeRelationship;
-        relationship.relationshipType = this.state.type;
-        relationship.properties.clearAll();
-        this.state.properties.split("\n").forEach((line: string) => {
-            let tokens = line.split(/: */);
-            if (tokens.length === 2) {
-                var key = tokens[0].trim();
-                var value = tokens[1].trim();
-                if (key.length > 0 && value.length > 0) {
-                    relationship.properties.set(key, value);
-                }
-            }
-        });
-        this.props.appModel.saveActiveRelationship();
+        this.props.appModel.saveActiveRelationship(this.state.type, this.state.properties);
     }
 
     render() {

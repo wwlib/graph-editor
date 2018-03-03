@@ -104,22 +104,72 @@ export default class AppModel extends EventEmitter {
             });
     }
 
-    saveActiveNode(oldLabel?: string): void {
-        // let properties: any = this.activeNode.properties.toJSON();
-        // console.log(properties);
-        this.neo4jController.updateNode(this._activeNode, oldLabel)
-            .then((response: any) => {
-                console.log(response);
-            });
+    saveActiveNode(label: string, propertiesText: any, oldLabel?: string): void {
+        let labelBackup: string = this._activeNode.caption;
+        let propertiesBackup: any = this._activeNode.properties.toJSON();
+
+        this._activeNode.caption = label;
+        this._activeNode.properties.clearAll();
+        propertiesText.split("\n").forEach((line: string) => {
+            let tokens = line.split(/: */);
+            if (tokens.length === 2) {
+                var key = tokens[0].trim();
+                var value = tokens[1].trim();
+                if (key.length > 0 && value.length > 0) {
+                    this._activeNode.properties.set(key, value);
+                }
+            }
+        });
+
+        if (this.activeGraph.type == "neo4j") {
+            this.neo4jController.updateNode(this._activeNode, oldLabel)
+                .then((response: any) => {
+                    console.log(response);
+                })
+                .catch((error: any) => {
+                    console.log(error);
+                    console.log(`ERROR: restoring node label and properties`);
+                    this._activeNode.caption = labelBackup;
+                    this._activeNode.properties.clearAll();
+                    for (let key in propertiesBackup) {
+                        this._activeNode.properties.set(key, propertiesBackup[key]);
+                    }
+                });
+        }
     }
 
-    saveActiveRelationship(): void {
-        // let properties: any = this._activeRelationship.properties.toJSON();
-        // console.log(properties);
-        this.neo4jController.updateRelationship(this._activeRelationship)
-            .then((response: any) => {
-                console.log(response);
-            });
+    saveActiveRelationship(label: string, propertiesText: any): void {
+        let labelBackup: string = this._activeRelationship.relationshipType;
+        let propertiesBackup: any = this._activeRelationship.properties.toJSON();
+
+        this._activeRelationship.relationshipType = label;
+        this._activeRelationship.properties.clearAll();
+        propertiesText.split("\n").forEach((line: string) => {
+            let tokens = line.split(/: */);
+            if (tokens.length === 2) {
+                var key = tokens[0].trim();
+                var value = tokens[1].trim();
+                if (key.length > 0 && value.length > 0) {
+                    this._activeRelationship.properties.set(key, value);
+                }
+            }
+        });
+
+        if (this.activeGraph.type == "neo4j") {
+            this.neo4jController.updateRelationship(this._activeRelationship)
+                .then((response: any) => {
+                    console.log(response);
+                })
+                .catch((error: any) => {
+                    console.log(error);
+                    console.log(`ERROR: restoring relationship label and properties`);
+                    this._activeRelationship.relationshipType = labelBackup;
+                    this._activeRelationship.properties.clearAll();
+                    for (let key in propertiesBackup) {
+                        this._activeRelationship.properties.set(key, propertiesBackup[key]);
+                    }
+                });
+        }
     }
 
     reverseActiveRelationship(): void {
