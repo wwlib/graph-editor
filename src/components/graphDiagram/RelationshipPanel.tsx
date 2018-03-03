@@ -67,7 +67,6 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
             case 'save':
                 this.save();
                 this.props.appModel.onRedraw();
-                this.props.hideRelationshipPanelCallback();
                 break;
             case "reverse":
                 this.props.appModel.reverseActiveRelationship();
@@ -76,12 +75,11 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
             case "delete":
                 this.props.appModel.deleteActiveRelationship();
                 this.props.appModel.onRedraw();
-                this.props.hideRelationshipPanelCallback();
                 break;
             case 'cancel':
-                this.props.hideRelationshipPanelCallback();
                 break;
         }
+        this.props.hideRelationshipPanelCallback();
 
     }
 

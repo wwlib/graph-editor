@@ -113,14 +113,24 @@ export default class Neo4jController {
                 with start, r, end
                 create (start)-[r2:${label}]->(end)
                 set r2 = { props }
-                with r
+                with r, r2
                 delete r
+                return r2
             `;
             console.log(JSON.stringify(properties, null, 2));
             console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
-                    resolve(D3Helper.data(response, neo4j));
+                    let result: any = {
+                        localRelationship: relationship,
+                        d3: D3Helper.data(response, neo4j)
+                    }
+                    if (result.d3.links && result.d3.links[0]) {
+                        relationship.id = result.d3.links[0].id;
+                    } else {
+                        console.log(`Could not set neo4j id of new relationship!`)
+                    }
+                    resolve(result);
                 })
                 .catch(error => {
                     reject(error);
@@ -137,14 +147,24 @@ export default class Neo4jController {
                 with start, r, end
                 create (end)-[r2:${label}]->(start)
                 set r2 = { props }
-                with r
+                with r, r2
                 delete r
+                return r2
             `;
             console.log(JSON.stringify(properties, null, 2));
             console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
-                    resolve(D3Helper.data(response, neo4j));
+                    let result: any = {
+                        localRelationship: relationship,
+                        d3: D3Helper.data(response, neo4j)
+                    }
+                    if (result.d3.links && result.d3.links[0]) {
+                        relationship.id = result.d3.links[0].id;
+                    } else {
+                        console.log(`Could not set neo4j id of new relationship!`)
+                    }
+                    resolve(result);
                 })
                 .catch(error => {
                     reject(error);
@@ -159,9 +179,15 @@ export default class Neo4jController {
             this.call(cypher)
                 .then(response => {
                     let result: any = {
-                        localNode: node,
+                        localRelationship: node,
                         d3: D3Helper.data(response, neo4j)
                     }
+                    if (result.d3.links && result.d3.links[0]) {
+                        node.id = result.d3.links[0].id;
+                    } else {
+                        console.log(`Could not set neo4j id of new node!`)
+                    }
+                    resolve(result);
                     resolve(result);
                 })
                 .catch(error => {
@@ -203,6 +229,11 @@ RETURN r`;
                         localRelationship: relationship,
                         d3: D3Helper.data(response, neo4j)
                     }
+                    if (result.d3.links && result.d3.links[0]) {
+                        relationship.id = result.d3.links[0].id;
+                    } else {
+                        console.log(`Could not set neo4j id of new relationship!`)
+                    }
                     resolve(result);
                 })
                 .catch(error => {
@@ -218,7 +249,7 @@ RETURN r`;
             this.call(cypher)
                 .then(response => {
                     let result: any = {
-                        localRelatiohship: relationship,
+                        localRelationship: relationship,
                         d3: D3Helper.data(response, neo4j)
                     }
                     resolve(result);

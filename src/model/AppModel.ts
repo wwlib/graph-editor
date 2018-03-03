@@ -324,12 +324,6 @@ export default class AppModel extends EventEmitter {
                 //create corresponding new relationship in neo4j
                 let relationshipResult: any = await this.neo4jController.addRelationship(this._newRelationship);
                 console.log(relationshipResult);
-                if (relationshipResult && relationshipResult.d3 && relationshipResult.d3.links && relationshipResult.d3.links[0]) {
-                    this._newRelationship.id = relationshipResult.d3.links[0].id;
-                } else {
-                    console.log(`Could not set neo4j id of new relationship!`)
-                }
-
             }
         }
 
@@ -425,8 +419,6 @@ export default class AppModel extends EventEmitter {
             this.neo4jController.addNode(this._activeNode)
                 .then((result: any) => {
                     console.log(result);
-                    let newNodeId: string = result.d3.nodes[0].id;
-                    this._activeNode.id = newNodeId;
                     this.onRedraw();
                 })
                 .catch((error: any) => {
