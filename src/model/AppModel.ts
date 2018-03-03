@@ -104,10 +104,10 @@ export default class AppModel extends EventEmitter {
             });
     }
 
-    saveActiveNode(): void {
+    saveActiveNode(oldLabel?: string): void {
         let properties: any = this.activeNode.properties.toJSON();
         console.log(properties);
-        this.neo4jController.updateNodeWithIdAndProperties(Number(this.activeNode.id), properties)
+        this.neo4jController.updateNode(this._activeNode, oldLabel)
             .then((response: any) => {
                 console.log(response);
             });
@@ -339,6 +339,20 @@ export default class AppModel extends EventEmitter {
         this.activeNode.y = y;
         console.log(`addNode: `, this.activeNode);
         //this.save( formatMarkup() );
+        if (this.activeGraph.type == "neo4j") {
+            this.neo4jController.addNode(this.activeNode)
+                .then((result: any) => {
+                    console.log(result);
+                    let newNodeId: string = result.d3.nodes[0].id;
+                    this._activeNode.id = newNodeId;
+                    this.onRedraw();
+                })
+                .catch((error: any) => {
+                    console.log(error);
+                    this.deleteActiveNode();
+                    this.onRedraw();
+                })
+        }
         this.onRedraw();
         return this.activeNode;
     }
@@ -356,9 +370,22 @@ export default class AppModel extends EventEmitter {
     deleteActiveNode()
     {
         if (this.activeNode) {
-            this.graphModel.deleteNode(this.activeNode);
-            // save( formatMarkup() );
-            this.onRedraw();
+            if (this.activeGraph.type == "neo4j") {
+                this.neo4jController.deleteNode(this.activeNode)
+                    .then((result: any) => {
+                        console.log(result);
+                        this.graphModel.deleteNode(this.activeNode);
+                        this.onRedraw();
+                    })
+                    .catch((error: any) => {
+                        console.log(error);
+                    })
+            } else {
+                this.graphModel.deleteNode(this.activeNode);
+                // save( formatMarkup() );
+                this.onRedraw();
+            }
+
         }
     }
 

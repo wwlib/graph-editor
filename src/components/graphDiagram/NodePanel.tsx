@@ -12,6 +12,7 @@ export interface NodePanelState { type: string, properties: string, lastUpdateTi
 
 export default class NodePanel extends React.Component<NodePanelProps, NodePanelState> {
 
+    private _oldLabel: string;
     private _setPropertiesHandler: any = this.setProperties.bind(this);
 
     constructor(props: any) {
@@ -29,6 +30,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
     }
 
     setProperties(model: Model): void {
+        this._oldLabel = this.props.appModel.activeNode.caption;
         let properties: string = "";
         if (this.props.appModel.activeNode.properties.listEditable().length > 0) {
           properties = this.props.appModel.activeNode.properties.listEditable().reduce(
@@ -101,7 +103,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
                 }
             }
         });
-        this.props.appModel.saveActiveNode();
+        this.props.appModel.saveActiveNode(this._oldLabel);
     }
 
     render() {
