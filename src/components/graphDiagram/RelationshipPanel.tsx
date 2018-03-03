@@ -8,7 +8,7 @@ import {
 import AppModel from '../../model/AppModel';
 
 export interface RelationshipPanelProps { appModel: AppModel, hideRelationshipPanelCallback: any}
-export interface RelationshipPanelState { type: string, properties: string, lastUpdateTime: number }
+export interface RelationshipPanelState { type: string, properties: string }
 
 export default class RelationshipPanel extends React.Component<RelationshipPanelProps, RelationshipPanelState> {
 
@@ -37,21 +37,11 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
         this.props.appModel.removeListener('updateActiveRelationship', this._setPropertiesHandler);
     }
 
-    setProperties(model: Model): void {
-        let properties: string = "";
-        if (this.props.appModel.activeRelationship.properties.listEditable().length > 0) {
-          properties = this.props.appModel.activeRelationship.properties.listEditable().reduce(
-            function(previous: string, property: any) {
-              return previous + property.key + ": " + property.value + "\n";
-            }, ""
-          );
-        }
-
+    setProperties(data: any): void {
         this.setState({
-            type: this.props.appModel.activeRelationship.relationshipType,
-            properties: properties
+            type: data.label,
+            properties: data.properties
         });
-        this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
     }
 
     handleInputChange(event: any) {

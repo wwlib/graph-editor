@@ -105,8 +105,8 @@ export default class AppModel extends EventEmitter {
     }
 
     saveActiveNode(oldLabel?: string): void {
-        let properties: any = this.activeNode.properties.toJSON();
-        console.log(properties);
+        // let properties: any = this.activeNode.properties.toJSON();
+        // console.log(properties);
         this.neo4jController.updateNode(this._activeNode, oldLabel)
             .then((response: any) => {
                 console.log(response);
@@ -114,9 +114,9 @@ export default class AppModel extends EventEmitter {
     }
 
     saveActiveRelationship(): void {
-        let properties: any = this.activeRelationship.properties.toJSON();
-        console.log(properties);
-        this.neo4jController.updateRelationshipWithIdAndProperties(Number(this.activeRelationship.id), properties)
+        // let properties: any = this.activeRelationship.properties.toJSON();
+        // console.log(properties);
+        this.neo4jController.updateRelationship(this._activeRelationship)
             .then((response: any) => {
                 console.log(response);
             });
@@ -127,11 +127,19 @@ export default class AppModel extends EventEmitter {
     }
 
     onUpdateActiveNode(event?: any): void {
-        this.emit('updateActiveNode', this);
+        let data: any = {
+            label: this.getActiveNodeLabel(),
+            properties: this.getActiveNodePropertiesAsText()
+        }
+        this.emit('updateActiveNode', data);
     }
 
     onUpdateActiveRelationship(event?: any): void {
-        this.emit('updateActiveRelationship', this);
+        let data: any = {
+            label: this.getActiveRelationshipLabel(),
+            properties: this.getActiveRelationshipPropertiesAsText()
+        }
+        this.emit('updateActiveRelationship', data);
     }
 
     onRedraw(): void {
@@ -200,7 +208,7 @@ export default class AppModel extends EventEmitter {
     }
 
     getSavedCypherList(): any[] {
-        console.log(`getSavedCypherList: `, this.activeGraph);
+        // console.log(`getSavedCypherList: `, this.activeGraph);
         let result: any[] = [];
         let neo4jGraphConfig: Neo4jGraphConfig;
         if (this.activeGraph && this.activeGraph.connection && this.activeGraph.connection.type == "neo4j") {
@@ -264,8 +272,8 @@ export default class AppModel extends EventEmitter {
         var node: Node = __data__.model as Node;
         if ( !this._newNode )
         {
-            this._newNode = this.addNode(event.x, event.y);
-            this._newRelationship = this.addRelationship( node, this._newNode );
+            this._newNode = this.addLocalNode(event.x, event.y);
+            this._newRelationship = this.addLocalRelationship( node, this._newNode );
         }
         var connectionNode = this.findClosestOverlappingNode( this._newNode );
         if ( connectionNode )
@@ -278,16 +286,36 @@ export default class AppModel extends EventEmitter {
         this._newNode.drag(event.dx, event.dy);
     }
 
-    onDragEnd() {
+    async onDragEnd() {
+        console.log(`AppModel: onDragEnd`, this._newNode, this._newRelationship);
         if ( this._newNode )
         {
             this._newNode.dragEnd();
             if ( this._newRelationship && this._newRelationship.end !== this._newNode )
             {
-                this.graphModel.deleteNode( this._newNode );
+                this.deleteLocalNode( this._newNode );
+            } else {
+                if (this.activeGraph.type == "neo4j") {
+                    // corresponding new node in neo4j
+                    let nodeResult: any = await this.neo4jController.addNode(this._newNode);
+                    console.log(nodeResult);
+                }
+            }
+            if (this.activeGraph.type == "neo4j") {
+                //create corresponding new relationship in neo4j
+                let relationshipResult: any = await this.neo4jController.addRelationship(this._newRelationship);
+                console.log(relationshipResult);
+                if (relationshipResult && relationshipResult.d3 && relationshipResult.d3.links && relationshipResult.d3.links[0]) {
+                    this._newRelationship.id = relationshipResult.d3.links[0].id;
+                } else {
+                    console.log(`Could not set neo4j id of new relationship!`)
+                }
+
             }
         }
+
         this._newNode = null;
+        this._newRelationship = null;
     }
 
     findClosestOverlappingNode( node: Node )
@@ -326,21 +354,57 @@ export default class AppModel extends EventEmitter {
         this._newRelationship = relationship;
     }
 
-    get newRelationShip(): Relationship {
+    get newRelationship(): Relationship {
         return this._newRelationship;
     }
 
-    addNode(x?: number, y?: number): Node {
+    getActiveRelationshipLabel(): string {
+        return this.activeRelationship.relationshipType;
+    }
+
+    getActiveRelationshipPropertiesAsText(): string {
+        let properties: string = "";
+        if (this._activeRelationship.properties.listEditable().length > 0) {
+            properties = this._activeRelationship.properties.listEditable().reduce(
+            (previous: string, property: any) => {
+                return previous + property.key + ": " + property.value + "\n";
+            }, "");
+        }
+        return properties;
+    }
+
+
+    getActiveNodeLabel(): string {
+        return this.activeNode.caption;
+    }
+
+    getActiveNodePropertiesAsText(): string {
+        let properties: string = "";
+        if (this._activeNode.properties.listEditable().length > 0) {
+            properties = this._activeNode.properties.listEditable().reduce(
+                (previous: string, property: any) => {
+                    return previous + property.key + ": " + property.value + "\n";
+                }, "");
+        }
+        return properties;
+    }
+
+    addLocalNode(x?: number, y?: number): Node {
         var svgElement = document.getElementById('svgElement');
         x = x || svgElement.clientWidth / 2;
         y = y || svgElement.clientHeight / 2;
-        this.activeNode = this.graphModel.createNode();
-        this.activeNode.x = x;
-        this.activeNode.y = y;
-        console.log(`addNode: `, this.activeNode);
+        this._activeNode = this.graphModel.createNode();
+        this._activeNode.x = x;
+        this._activeNode.y = y;
+        console.log(`addLocalNode: `, this._activeNode);
+        return this._activeNode;
+    }
+
+    addNode(x?: number, y?: number): Node {
+        this._activeNode = this.addLocalNode(x, y);
         //this.save( formatMarkup() );
         if (this.activeGraph.type == "neo4j") {
-            this.neo4jController.addNode(this.activeNode)
+            this.neo4jController.addNode(this._activeNode)
                 .then((result: any) => {
                     console.log(result);
                     let newNodeId: string = result.d3.nodes[0].id;
@@ -354,16 +418,24 @@ export default class AppModel extends EventEmitter {
                 })
         }
         this.onRedraw();
-        return this.activeNode;
+        return this._activeNode;
     }
 
-    addRelationship(start: Node, end: Node): Relationship {
-        return this.graphModel.createRelationship(start, end);
+    addLocalRelationship(start: Node, end: Node): Relationship {
+        let relationship: Relationship = this.graphModel.createRelationship(start, end);
+        return relationship;
     }
 
     reverseActiveRelationship(): void {
         if (this.activeRelationship) {
             this.activeRelationship.reverse();
+        }
+    }
+
+    deleteLocalNode(node: Node): void {
+        this.graphModel.deleteNode(node);
+        if (node == this._newNode) {
+            this._newNode = null;
         }
     }
 

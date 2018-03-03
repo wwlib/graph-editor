@@ -21,6 +21,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
 
     componentWillMount() {
         console.log(`nodePanel: componentWillMount:`, this);
+        this._oldLabel = null;
         this.setState({
             type: "",
             properties: ""
@@ -29,21 +30,11 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
         this.props.appModel.on('updateActiveNode', this._setPropertiesHandler);
     }
 
-    setProperties(model: Model): void {
-        this._oldLabel = this.props.appModel.activeNode.caption;
-        let properties: string = "";
-        if (this.props.appModel.activeNode.properties.listEditable().length > 0) {
-          properties = this.props.appModel.activeNode.properties.listEditable().reduce(
-            function(previous: string, property: any) {
-              return previous + property.key + ": " + property.value + "\n";
-            }, ""
-          );
-        }
-
+    setProperties(data: any): void {
+        this._oldLabel = data.label;
         this.setState({
-            type: this.props.appModel.activeNode.caption,
-            properties: properties,
-            lastUpdateTime: new Date().getTime()
+            type: data.label,
+            properties: data.properties
         });
     }
 

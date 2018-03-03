@@ -2,7 +2,8 @@ const neo4j = require('neo4j-driver').v1;
 // const config = require('../../data/neo4j-db-config.json');
 import { GraphConnection } from '../model/Graph';
 import {
-    Node
+    Node,
+    Relationship
 } from 'graph-diagram';
 
 import D3Helper from './helpers/D3Helper';
@@ -103,12 +104,19 @@ export default class Neo4jController {
     // matching relationship by ID is not optimized #3064
     // https://github.com/neo4j/neo4j/issues/3064
 
-    updateRelationshipWithIdAndProperties(id: number, properties: any): Promise<any> {
+    updateRelationship(relationship: Relationship): Promise<any> {
         return new Promise((resolve, reject) => {
+            let label: string = relationship.relationshipType;
+            let properties: any = relationship.properties.toJSON();
             let cypher: string = `
-                match ()-[r]-() WHERE ID(r) = ${id}
-                set r = { props }
+                match (start)-[r]->(end) WHERE ID(r) = ${relationship.id}
+                with start, r, end
+                create (start)-[r2:${label}]->(end)
+                set r2 = { props }
+                with r
+                delete r
             `;
+            console.log(JSON.stringify(properties, null, 2));
             console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
@@ -147,6 +155,29 @@ export default class Neo4jController {
                 .then(response => {
                     let result: any = {
                         localNode: node,
+                        d3: D3Helper.data(response, neo4j)
+                    }
+                    resolve(result);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
+    }
+
+    addRelationship(relationship: Relationship): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let startId: string = relationship.start.id;
+            let endId: string = relationship.end.id;
+            let cypher: string = `MATCH (start),(end)
+WHERE id(start)=${startId} AND id(end) = ${endId}
+CREATE (start)-[r:RELATED_TO]->(end)
+RETURN r`;
+            console.log(cypher);
+            this.call(cypher)
+                .then(response => {
+                    let result: any = {
+                        localRelationship: relationship,
                         d3: D3Helper.data(response, neo4j)
                     }
                     resolve(result);
