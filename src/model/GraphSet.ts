@@ -31,28 +31,34 @@ export default class GraphSet {
     loadGraphNames(): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let userDataPath: string = path.resolve(this.model.userDataPath);
-            fs.readdir(userDataPath, (err, files) => {
+            ensureDir(path.resolve(this.model.userDataPath), 0o755, (err: any) => {
                 if (err) {
-                    console.log(`loadGraphNames: error reading files in: ${userDataPath}`);
                     reject(err);
                 } else {
-                    files.forEach((file: string) => {
-                        let filename: string = path.basename(file, '.json');
-                            console.log(`loadGraphNames: adding: ${file} -> ${filename}`);
-                            this.graphNames.set(filename, null);
-                            // let filepath: string = path.resolve(this.model.userDataPath, file);
-                            // this.load(filepath, (err: any, obj: any) => {
-                            //     if (err) {
-                            //         console.log(`loadGraphNames: error loading: ${filepath}`);
-                            //     } else {
-                            //         console.log(`loadGraphNames: setting connection: ${filename}: ${obj.connection}`);
-                            //         this.graphNames.set(filename, obj.connection);
-                            //     }
-                            // });
+                    fs.readdir(userDataPath, (err, files) => {
+                        if (err) {
+                            console.log(`loadGraphNames: error reading files in: ${userDataPath}`);
+                            reject(err);
+                        } else {
+                            files.forEach((file: string) => {
+                                let filename: string = path.basename(file, '.json');
+                                    console.log(`loadGraphNames: adding: ${file} -> ${filename}`);
+                                    this.graphNames.set(filename, null);
+                                    // let filepath: string = path.resolve(this.model.userDataPath, file);
+                                    // this.load(filepath, (err: any, obj: any) => {
+                                    //     if (err) {
+                                    //         console.log(`loadGraphNames: error loading: ${filepath}`);
+                                    //     } else {
+                                    //         console.log(`loadGraphNames: setting connection: ${filename}: ${obj.connection}`);
+                                    //         this.graphNames.set(filename, obj.connection);
+                                    //     }
+                                    // });
+                            });
+                            resolve()
+                        }
                     });
-                    resolve()
                 }
-            })
+            });
         })
     }
 
