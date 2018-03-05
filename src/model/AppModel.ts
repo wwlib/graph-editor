@@ -30,7 +30,6 @@ export default class AppModel extends EventEmitter {
     public userDataPath: string;
     public graphSet: GraphSet;
     public neo4jController: Neo4jController;
-    public graphData: any;
     public graphModel: Model;
     public activeGraph: Graph;
 
@@ -57,7 +56,8 @@ export default class AppModel extends EventEmitter {
             this.graphSet = new GraphSet(this);
             this.graphSet.loadGraphNames()
                 .then(() => {
-                   this.initGraphWithName(this.graphSet.getGraphNames()[1]);
+                   this.initGraphWithName('example-file'); //this.graphSet.getGraphNames()[1]);
+                //    this.emit('ready', this);
                 });
         });
     }
@@ -71,31 +71,46 @@ export default class AppModel extends EventEmitter {
         return model;
     }
 
+    loadGraphWithName(name: string): void {
+        this. initGraphWithName(name);
+    }
+
     initGraphWithName(name: string) {
         console.log(`initGraphWithName: ${name}`);
         let svgElement = document.getElementById('svgElement');
-        let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
-        let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
+        let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
+        let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
         this.graphSet.loadGraphWithName(name)
             .then((graph:Graph) => {
                 let connection: GraphConnection = graph.connection;
-                switch(connection.type) {
+                switch(graph.type) {
                     case "file":
                         console.log("initGraphWithName: type: file");
+                        if (graph.markup) {
+                            this.graphModel = this.parseMarkup(graph.markup);
+                        } else {
+                            this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, {x: x, y: y});
+                        }
+                        this.activeNode = this.graphModel.nodeList()[0];
+                        this._activeRelationship = this.graphModel.relationshipList()[0];
+                        console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
+                        this.activeGraph = graph;
+                        this.applyActiveGraphCss();
+                        console.log(`activeGraph: `, graph);
+                        this.emit('ready', this);
                         break;
                     case "neo4j":
                         this.neo4jController = new Neo4jController(connection);
-                        // this.neo4jController.getNodesAndRelationships(50)
                         console.log(`graph: `, graph);
                         graph.config = new Neo4jGraphConfig(graph.config);
                         this.neo4jController.getCypherAsD3(graph.config.initialCypher)
                             .then(data => {
-                                this.graphData = data;
-                                this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
+                                this.graphModel = ModelToD3.parseD3(data, null, {x: x, y: y});
                                 this.activeNode = this.graphModel.nodeList()[0];
                                 this._activeRelationship = this.graphModel.relationshipList()[0];
                                 console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                                 this.activeGraph = graph;
+                                this.applyActiveGraphCss();
                                 console.log(`activeGraph: `, graph);
                                 this.emit('ready', this);
                             });
@@ -260,7 +275,11 @@ export default class AppModel extends EventEmitter {
         let svg: any = select("#svgContainer svg");
         let firstg: any = svg.select("g")
             .attr("id", "firstg")
-        var style = svg.insert("style", "#firstg");
+        let style = svg.select("#firststyle")
+        if (style.empty()) {
+            style = svg.insert("style", "#firstg")
+                .attr("id", "firststyle");
+        }
         style.html(this.getCSS());
 
         let xml: any = select("#svgContainer svg").node();
@@ -270,8 +289,8 @@ export default class AppModel extends EventEmitter {
     }
 
     getCSS(): string {
-        let graphEditorStyleSheet = document.getElementById('graph-editor-style');
-        let styleData = graphEditorStyleSheet.innerHTML;
+        let styleData = this.activeGraph.css;
+        styleData = `/* <![CDATA[ */\n${styleData}\n/* ]]> */`;
         let css_pp = pd.css(styleData)
         return css_pp;
     }
@@ -280,7 +299,7 @@ export default class AppModel extends EventEmitter {
         // console.log(`getSavedCypherList: `, this.activeGraph);
         let result: any[] = [];
         let neo4jGraphConfig: Neo4jGraphConfig;
-        if (this.activeGraph && this.activeGraph.connection && this.activeGraph.connection.type == "neo4j") {
+        if (this.activeGraph.type == "neo4j") {
             let neo4jGraphConfig: Neo4jGraphConfig = this.activeGraph.config;
             result = neo4jGraphConfig.savedCyphersToArray();
         }
@@ -298,8 +317,8 @@ export default class AppModel extends EventEmitter {
     executeCypher(cypher: string): void {
         console.log(`executeCypher: ${cypher}`);
         let svgElement = document.getElementById('svgElement');
-        let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
-        let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
+        // let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
+        // let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
         this.neo4jController.getCypherAsD3(cypher)
             .then(data => {
                 // this.graphData = data;
@@ -533,6 +552,23 @@ export default class AppModel extends EventEmitter {
                 this.onRedraw();
             }
         }
+    }
+
+    applyActiveGraphCss(css?: string): void {
+        this.activeGraph.css = css || this.activeGraph.css;
+        let graphEditorStyleSheet = document.getElementById('graph-editor-style');
+        graphEditorStyleSheet.innerHTML = pd.css(this.activeGraph.css);
+    }
+
+    saveActiveGraph(graphName?: string): void {
+        if (this.activeGraph.type == "file") {
+            this.activeGraph.d3Graph = ModelToD3.convert(this.graphModel);
+            this.activeGraph.markup = this.getMarkup();
+        }
+        if (graphName) {
+            this.activeGraph.name = graphName;
+        }
+        this.graphSet.saveGraph(this.activeGraph);
     }
 
     dispose(): void {

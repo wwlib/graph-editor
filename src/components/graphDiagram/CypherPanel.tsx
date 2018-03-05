@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import * as ReactList from 'react-list';
+import Draggable from "react-draggable";
+
 import {
   Model,
   Node,
@@ -150,8 +152,9 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
 
         // console.log(`render: `, this._savedCypherList);
 
-        return  <div className="editor-panel well" id="cypherPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>
+        return  <Draggable>
+                <div className="editor-panel well" id="cypherPanel">
+                    <h4 className="pull-left handle" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                             <tbody>
@@ -194,6 +197,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                     <ReactBootstrap.Button bsStyle={'default'} key={"delete"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
 
-                </div>;
+                </div>
+                </Draggable>
     }
 }

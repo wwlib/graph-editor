@@ -25,6 +25,10 @@ body {
     background-color: #f7f7f7;
 }
 
+.editor-panel .input-label {
+    padding-right: 3px;
+}
+
 #graphEditorButtons {
     position: absolute;
     top: 10px;
@@ -61,13 +65,13 @@ body {
     width: 420px;
 }
 
-.modal {
+.modal-export {
     width: 80%;
     left: 32%;
     max-width: 1024px;
 }
 
-.modal-body {
+.modal-export-body {
     min-height: 400px;
 }
 
@@ -86,11 +90,13 @@ textarea.code {
     font-size: 10pt;
 }
 
+/*
 circle.node-base {
   fill: #FF756E;
   stroke: #E06760;
   stroke-width: 3px;
 }
+*/
 
 text.caption {
   fill: #FFFFFF;

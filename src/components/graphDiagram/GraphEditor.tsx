@@ -37,7 +37,6 @@ export interface GraphEditorProps {
   appModel: AppModel;
   width: number;
   height: number;
-  graphData: d3Types.d3Graph;
 }
 export interface GraphEditorState {
   scale: number;
@@ -52,6 +51,7 @@ let svgContainer: any;
 let svg_g: any;
 let simulation: any;
 let simulationTickCount: number = 0;
+let simulationMaxTicks: number;
 let simNodes: any;
 let simLinks: any;
 let simData: any;
@@ -71,11 +71,15 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     componentWillMount() {
         thiz = this;
+        let showCypherPanel: boolean = false;
+        if (this.props.appModel.activeGraph) {
+            showCypherPanel = this.props.appModel.activeGraph.type == "neo4j"
+        }
         this.setState({
             scale: 1.0,
             showNodePanel: false,
             showRelationshipPanel: false,
-            showCypherPanel: true,
+            showCypherPanel: showCypherPanel,
             lastUpdateTime: 0
         });
 
@@ -164,11 +168,22 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     .attr("d", function(d: any) { return d.arrow.outline; } );
             });
         this.draw();
-        this.startSimulation();
+        if (this.props.appModel.activeGraph.type == "neo4j") {
+            this.startSimulation();
+        }
     }
 
     componentWillUnmount() {
         this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
+    }
+
+    componentWillReceiveProps(nextProps: GraphEditorProps) {
+        if (nextProps.appModel) {
+            this.setState({
+                showCypherPanel: nextProps.appModel.activeGraph.type == "neo4j"
+            }, () => {
+            });
+        }
     }
 
     onRedrawGraph(): void {
@@ -209,12 +224,14 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     editNode(__data__: any)
     {
+        console.log(this.props.appModel.activeNode);
         this.showNodePanel();
         this.props.appModel.activeNode = __data__.model as Node;
     }
 
     editRelationship(__data__: any)
     {
+        console.log(this.props.appModel.activeRelationship);
         this.showRelationshipPanel();
         this.props.appModel.activeRelationship = __data__.model as Relationship;
     }
@@ -297,7 +314,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         }
     }
 
-    startSimulation(): void {
+    startSimulation(ticks?: number): void {
+        simulationMaxTicks = ticks || 20;
         // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
@@ -330,7 +348,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             .attr("cy", function(d: any) { return d.y; });
 
         simulationTickCount++
-        if (simulationTickCount >= 20) {
+        if (simulationTickCount >= simulationMaxTicks) {
             thiz.ended();
         }
     }
@@ -362,6 +380,10 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             case 'bubbles':
                 this.diagram.toggleRenderPropertyBubblesFlag();
                 this.draw();
+                break;
+            case 'forceLayout':
+                this.startSimulation(20);
+                break;
         }
     }
 
@@ -419,6 +441,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                         onClick={this.onButtonClicked.bind(this, "addNode")}><i className="icon-plus"></i> Node</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="bubblesButton" bsStyle={'default'} key={"bubbles"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
+                    <ReactBootstrap.Button id="forceLayoutButton" bsStyle={'default'} key={"forceLayout"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "forceLayout")}>Force</ReactBootstrap.Button>
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />

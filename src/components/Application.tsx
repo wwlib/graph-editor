@@ -26,7 +26,7 @@ export default class Application extends React.Component < ApplicationProps, App
                         appModel={this.props.model}
                         width={960} //{window.screen.availWidth}
                         height={640} //{window.screen.availHeight}
-                        graphData={this.props.model.graphData} />
+                    />
             //         </div>
             //     </div>
             // </div>

@@ -8,7 +8,7 @@ const shell = require('electron').shell;
 export interface ModalExportProps { showModalProp: boolean, onClose: any, appModel: AppModel, exportMode: string }
 export interface ModalExportState { showModalState: boolean, exportedData: string }
 
-export class ModalExport extends React.Component<ModalExportProps, ModalExportState> {
+export default class ModalExport extends React.Component<ModalExportProps, ModalExportState> {
 
     constructor(props: any) {
         super(props);
@@ -71,8 +71,7 @@ export class ModalExport extends React.Component<ModalExportProps, ModalExportSt
     }
 
     save() {
-        console.log(`ModalExport: save`);
-        // console.log(this.props.appModel);
+        console.log(`ModalExport: save: ${this.props.exportMode}`);
         switch(this.props.exportMode) {
             case "cypher":
                 let cypher = this.state.exportedData;
@@ -81,6 +80,19 @@ export class ModalExport extends React.Component<ModalExportProps, ModalExportSt
                     "?init=" + encodeURIComponent(cypher)+
                     "&query=" + encodeURIComponent("start n=node(*) return n");
                 shell.openExternal(url);
+                break;
+            case "markup":
+
+                break;
+            case "d3":
+
+                break;
+            case "svg":
+
+                break;
+            case "css":
+                this.props.appModel.applyActiveGraphCss(this.state.exportedData);
+                break;
         }
 
         this.close();
@@ -112,12 +124,12 @@ export class ModalExport extends React.Component<ModalExportProps, ModalExportSt
     }
 
     render() {
-        return  <ReactBootstrap.Modal show={this.state.showModalState} onHide={this.onHide.bind(this)}>
+        return  <ReactBootstrap.Modal className="modal-export" show={this.state.showModalState} onHide={this.onHide.bind(this)}>
                       <ReactBootstrap.Modal.Header>
                           <ReactBootstrap.Modal.Title>Exported Data: {this.props.exportMode}</ReactBootstrap.Modal.Title>
                       </ReactBootstrap.Modal.Header>
 
-                      <ReactBootstrap.Modal.Body>
+                      <ReactBootstrap.Modal.Body className="modal-export-body">
                           <textarea name="exportedData" className="code" value={this.state.exportedData} onChange={this.handleInputChange.bind(this)}/>
                       </ReactBootstrap.Modal.Body>
 
