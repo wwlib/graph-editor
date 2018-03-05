@@ -49,7 +49,6 @@ export default class Neo4jController {
             `;
             this.call(cypher)
                 .then(response => {
-                    console.log(JSON.stringify(response, null, 2));
                     resolve(D3Helper.data(response, neo4j));
                 })
                 .catch(error => {
@@ -90,7 +89,6 @@ export default class Neo4jController {
                 set n :${label}
                 ${removeLabelClause}
             `;
-            console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
                     resolve(D3Helper.data(response, neo4j));
@@ -117,8 +115,6 @@ export default class Neo4jController {
                 delete r
                 return r2
             `;
-            console.log(JSON.stringify(properties, null, 2));
-            console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
                     let result: any = {
@@ -128,7 +124,7 @@ export default class Neo4jController {
                     if (result.d3.links && result.d3.links[0]) {
                         relationship.id = result.d3.links[0].id;
                     } else {
-                        console.log(`Could not set neo4j id of new relationship!`)
+                        console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }
                     resolve(result);
                 })
@@ -151,8 +147,6 @@ export default class Neo4jController {
                 delete r
                 return r2
             `;
-            console.log(JSON.stringify(properties, null, 2));
-            console.log(cypher);
             this.call(cypher, {props: properties})
                 .then(response => {
                     let result: any = {
@@ -162,7 +156,7 @@ export default class Neo4jController {
                     if (result.d3.links && result.d3.links[0]) {
                         relationship.id = result.d3.links[0].id;
                     } else {
-                        console.log(`Could not set neo4j id of new relationship!`)
+                        console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }
                     resolve(result);
                 })
@@ -175,19 +169,17 @@ export default class Neo4jController {
     addNode(node: Node): Promise<any> {
         return new Promise((resolve, reject) => {
             let cypher: string = `create (n) return n`;
-            console.log(cypher);
             this.call(cypher)
                 .then(response => {
                     let result: any = {
-                        localRelationship: node,
+                        localNode: node,
                         d3: D3Helper.data(response, neo4j)
                     }
-                    if (result.d3.links && result.d3.links[0]) {
-                        node.id = result.d3.links[0].id;
+                    if (result.d3.nodes && result.d3.nodes[0]) {
+                        node.id = result.d3.nodes[0].id;
                     } else {
-                        console.log(`Could not set neo4j id of new node!`)
+                        console.log(`Could not set neo4j id of new node!`, response, result);
                     }
-                    resolve(result);
                     resolve(result);
                 })
                 .catch(error => {
@@ -199,7 +191,6 @@ export default class Neo4jController {
     deleteNode(node: Node): Promise<any> {
         return new Promise((resolve, reject) => {
             let cypher: string = `match (n) where id(n) = ${node.id} detach delete n`;
-            console.log(cypher);
             this.call(cypher)
                 .then(response => {
                     let result: any = {
@@ -222,7 +213,6 @@ export default class Neo4jController {
 WHERE id(start)=${startId} AND id(end) = ${endId}
 CREATE (start)-[r:RELATED_TO]->(end)
 RETURN r`;
-            console.log(cypher);
             this.call(cypher)
                 .then(response => {
                     let result: any = {
@@ -232,7 +222,7 @@ RETURN r`;
                     if (result.d3.links && result.d3.links[0]) {
                         relationship.id = result.d3.links[0].id;
                     } else {
-                        console.log(`Could not set neo4j id of new relationship!`)
+                        console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }
                     resolve(result);
                 })
@@ -245,7 +235,6 @@ RETURN r`;
     deleteRelationship(relationship: Relationship): Promise<any> {
         return new Promise((resolve, reject) => {
             let cypher: string = `match ()-[r]-() Where ID(r)=${relationship.id} Delete r`;
-            console.log(cypher);
             this.call(cypher)
                 .then(response => {
                     let result: any = {

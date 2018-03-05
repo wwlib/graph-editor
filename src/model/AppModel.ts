@@ -596,6 +596,7 @@ circle.node-base {
     }
 
     saveActiveGraph(): void {
+        console.log(`saveActiveGraph: `, this.activeGraph, this.graphModel);
         if (this.activeGraph) {
             if (this.activeGraph.type == "file") {
                 this.activeGraph.d3Graph = ModelToD3.convert(this.graphModel);

@@ -1,5 +1,7 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import Draggable from "react-draggable";
+
 import {
   Model,
   Node,
@@ -86,7 +88,8 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
 
     render() {
         let nodeId: string = this.props.appModel.activeNode ? this.props.appModel.activeNode.id : ""
-        return  <div className="editor-panel well" id="nodeEditorPanel">
+        return  <Draggable>
+                <div className="editor-panel well" id="nodeEditorPanel">
                     <h4 className="pull-left" style={{marginBottom:20}}>Node [{nodeId}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
@@ -111,6 +114,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
                         onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
-                </div>;
+                </div>
+                </Draggable>;
     }
 }

@@ -16,7 +16,6 @@ export type GraphConfig = any;
 export type GraphData = {
     name: string;
     connection: GraphConnection;
-    type: string;
     scale: number
     css: string;
     config: GraphConfig | Neo4jGraphConfig;
@@ -26,7 +25,6 @@ export type GraphData = {
 
 export default class Graph {
 
-    public type: string;
     public name: string;
     public connection: GraphConnection;
     public scale: number;
@@ -42,7 +40,6 @@ export default class Graph {
     initWithJson(json: any): Graph {
       this.name = json.name;
       this.connection = json.connection;
-      this.type = this.connection.type;
       if (this.type == 'neo4j') {
           this.config = new Neo4jGraphConfig(json.config)
       } else {
@@ -68,5 +65,9 @@ export default class Graph {
         json.markup = this.markup;
 
         return json;
+    }
+
+    get type() {
+        return this.connection.type;
     }
 }

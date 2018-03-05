@@ -64,11 +64,12 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     }
 
     save() {
-        console.log(`ModalFileDetails: save: ${this.props.fileDetailsMode}`);
+        // console.log(`ModalFileDetails: save: ${this.props.fileDetailsMode}`, this.state.graphName, this.state.connection, JSON.parse(this.state.connection));
         if (this.state.graphName != "<filename>") {
             this.props.appModel.activeGraph.name = this.state.graphName;
             this.props.appModel.activeGraph.connection = JSON.parse(this.state.connection);
             this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph);
+            // console.log(this.props.appModel.activeGraph);
             this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
                 this.close();
             });
