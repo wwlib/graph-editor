@@ -90,8 +90,12 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
             case 'details':
                 this.openModalFileDetails();
                 break;
+            case 'new':
+                this.props.appModel.newGraph();
+                this.openModalFileDetails();
+                break;
             case 'save':
-                this.props.appModel.saveActiveGraph(this.state.graphName);
+                this.props.appModel.saveActiveGraph();
         		break;
         }
     }
@@ -117,7 +121,7 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
 
     onMenuItemSelected(value: string) {
         this.setState({ graphName: value});
-        this.props.appModel.loadGraphWithName(value);
+        this.props.appModel.initGraphWithName(value);
     }
 
     renderFilenameMenuItems(): any {
@@ -171,6 +175,8 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                           onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
                         <ReactBootstrap.Button bsStyle={'default'} key={"details"} style = {{width: 80}}
                           onClick={this.onButtonClicked.bind(this, "details")}>Details</ReactBootstrap.Button>
+                        <ReactBootstrap.Button bsStyle={'default'} key={"new"} style = {{width: 80}}
+                            onClick={this.onButtonClicked.bind(this, "new")}>New</ReactBootstrap.Button>
                     </div>
                   </div>
                 </div>;

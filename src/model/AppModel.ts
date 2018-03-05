@@ -56,8 +56,9 @@ export default class AppModel extends EventEmitter {
             this.graphSet = new GraphSet(this);
             this.graphSet.loadGraphNames()
                 .then(() => {
-                   this.initGraphWithName('example-file'); //this.graphSet.getGraphNames()[1]);
-                //    this.emit('ready', this);
+                //    this.initGraphWithName('example-file'); //this.graphSet.getGraphNames()[1]);
+                   this.emit('ready', this);
+                   this.newGraph();
                 });
         });
     }
@@ -71,8 +72,36 @@ export default class AppModel extends EventEmitter {
         return model;
     }
 
-    loadGraphWithName(name: string): void {
-        this. initGraphWithName(name);
+    newGraph(): void {
+        let svgElement = document.getElementById('svgElement');
+        let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
+        let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
+        let graphData: any = {
+            name: '<filename>',
+            connection: {type: "file"},
+            type: "file",
+            config: {},
+            scale: 1.0,
+            css: `
+circle.node-base {
+  fill: #FF756E;
+  stroke: #E06760;
+  stroke-width: 3px;
+}
+`,
+            d3Graph: null,
+            markup: null
+        }
+        this.activeGraph = new Graph().initWithJson(graphData);
+        this.applyActiveGraphCss();
+        this.graphModel = new Model();
+        let node: Node = this.graphModel.createNode();
+        node.x = x;
+        node.y = y;
+        node.caption = 'New Node';
+        this._activeNode = this.graphModel.nodeList()[0];
+        this._activeRelationship = null;
+        this.onGraphLoaded();
     }
 
     initGraphWithName(name: string) {
@@ -97,7 +126,8 @@ export default class AppModel extends EventEmitter {
                         this.activeGraph = graph;
                         this.applyActiveGraphCss();
                         console.log(`activeGraph: `, graph);
-                        this.emit('ready', this);
+                        // this.emit('ready', this);
+                        this.onGraphLoaded();
                         break;
                     case "neo4j":
                         this.neo4jController = new Neo4jController(connection);
@@ -112,7 +142,8 @@ export default class AppModel extends EventEmitter {
                                 this.activeGraph = graph;
                                 this.applyActiveGraphCss();
                                 console.log(`activeGraph: `, graph);
-                                this.emit('ready', this);
+                                // this.emit('ready', this);
+                                this.onGraphLoaded();
                             });
                         break;
                 }
@@ -206,8 +237,12 @@ export default class AppModel extends EventEmitter {
         }
     }
 
-    onUpdateData(event: any): void {
-        this.emit('updateModel', this);
+    // onUpdateData(event: any): void {
+    //     this.emit('graphModel', this);
+    // }
+
+    onGraphLoaded(event?: any): void {
+        this.emit('graphLoaded');
     }
 
     onUpdateActiveNode(event?: any): void {
@@ -290,7 +325,7 @@ export default class AppModel extends EventEmitter {
 
     getCSS(): string {
         let styleData = this.activeGraph.css;
-        styleData = `/* <![CDATA[ */\n${styleData}\n/* ]]> */`;
+        // styleData = `/* <![CDATA[ */\n${styleData}\n/* ]]> */`;
         let css_pp = pd.css(styleData)
         return css_pp;
     }
@@ -560,15 +595,14 @@ export default class AppModel extends EventEmitter {
         graphEditorStyleSheet.innerHTML = pd.css(this.activeGraph.css);
     }
 
-    saveActiveGraph(graphName?: string): void {
-        if (this.activeGraph.type == "file") {
-            this.activeGraph.d3Graph = ModelToD3.convert(this.graphModel);
-            this.activeGraph.markup = this.getMarkup();
+    saveActiveGraph(): void {
+        if (this.activeGraph) {
+            if (this.activeGraph.type == "file") {
+                this.activeGraph.d3Graph = ModelToD3.convert(this.graphModel);
+                this.activeGraph.markup = this.getMarkup();
+            }
+            this.graphSet.saveGraph(this.activeGraph);
         }
-        if (graphName) {
-            this.activeGraph.name = graphName;
-        }
-        this.graphSet.saveGraph(this.activeGraph);
     }
 
     dispose(): void {

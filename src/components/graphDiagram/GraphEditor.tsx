@@ -67,26 +67,35 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     private _editNodeHandler: any = this.editNode.bind(this);
     private _editRelationshipHandler: any = this.editRelationship.bind(this);
+    private _onGraphLoadedHandler: any = this.onGraphLoaded.bind(this);
     private _onRedrawGraphHandler: any = this.onRedrawGraph.bind(this);
 
     componentWillMount() {
         thiz = this;
-        let showCypherPanel: boolean = false;
-        if (this.props.appModel.activeGraph) {
-            showCypherPanel = this.props.appModel.activeGraph.type == "neo4j"
-        }
         this.setState({
             scale: 1.0,
             showNodePanel: false,
             showRelationshipPanel: false,
-            showCypherPanel: showCypherPanel,
+            showCypherPanel: false,
             lastUpdateTime: 0
         });
 
         this.props.appModel.on('redrawGraph', this._onRedrawGraphHandler);
+        this.props.appModel.on('graphLoaded', this._onGraphLoadedHandler);
       }
 
     componentDidMount() {
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
+        this.props.appModel.removeListener('graphLoaded', this._onGraphLoadedHandler);
+    }
+
+    componentWillReceiveProps(nextProps: GraphEditorProps) {
+    }
+
+    initGraphEditor(): void {
         this.setupSvg();
 
         this.diagram = new Diagram()
@@ -168,22 +177,22 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     .attr("d", function(d: any) { return d.arrow.outline; } );
             });
         this.draw();
+
+        let showCypherPanel: boolean = false;
         if (this.props.appModel.activeGraph.type == "neo4j") {
+            showCypherPanel = true;
             this.startSimulation();
         }
+        this.setState({
+            scale: 1.0,
+            showNodePanel: false,
+            showRelationshipPanel: false,
+            showCypherPanel: showCypherPanel,
+        });
     }
 
-    componentWillUnmount() {
-        this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
-    }
-
-    componentWillReceiveProps(nextProps: GraphEditorProps) {
-        if (nextProps.appModel) {
-            this.setState({
-                showCypherPanel: nextProps.appModel.activeGraph.type == "neo4j"
-            }, () => {
-            });
-        }
+    onGraphLoaded(): void {
+        this.initGraphEditor();
     }
 
     onRedrawGraph(): void {

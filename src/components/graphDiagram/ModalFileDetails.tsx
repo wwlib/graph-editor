@@ -6,7 +6,7 @@ import AppModel from '../../model/AppModel';
 const shell = require('electron').shell;
 
 export interface ModalFileDetailsProps { showModalProp: boolean, onClose: any, appModel: AppModel, fileDetailsMode: string }
-export interface ModalFileDetailsState { showModalState: boolean, graphName: string, connection: string }
+export interface ModalFileDetailsState { showModalState: boolean, graphName: string, graphNameStyle: any, connection: string }
 
 export default class ModalFileDetails extends React.Component<ModalFileDetailsProps, ModalFileDetailsState> {
 
@@ -19,6 +19,7 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
         this.setState({
                 showModalState: false,
                 graphName: "",
+                graphNameStyle: {color: 'black'},
                 connection: ""
             }, () => {
         });
@@ -30,10 +31,11 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
 
     componentWillReceiveProps(nextProps: ModalFileDetailsProps) {
         // console.log(`ModalFileDetails: componentWillReceiveProps`, nextProps);
-        if (nextProps.appModel) {
+        if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
             this.setState({
                 showModalState: nextProps.showModalProp,
                 graphName: nextProps.appModel.activeGraph.name,
+                graphNameStyle: {color: 'black'},
                 connection: JSON.stringify(nextProps.appModel.activeGraph.connection, null, 2)
             }, () => {
                 // console.log(this.state.exportedData);
@@ -47,9 +49,13 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
 
     close() {
         // console.log(`ModalFileDetails: close`);
-        this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
-            this.props.onClose();
-        });
+        if (this.state.graphName != "<filename>") {
+            this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
+                this.props.onClose();
+            });
+        } else {
+            this.setState({ graphNameStyle: {color: 'red'}});
+        }
     }
 
     onHide() {
@@ -59,9 +65,16 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
 
     save() {
         console.log(`ModalFileDetails: save: ${this.props.fileDetailsMode}`);
-        this.props.appModel.activeGraph.name = this.state.graphName;
-        this.props.appModel.activeGraph.connection = JSON.parse(this.state.connection);
-        this.close();
+        if (this.state.graphName != "<filename>") {
+            this.props.appModel.activeGraph.name = this.state.graphName;
+            this.props.appModel.activeGraph.connection = JSON.parse(this.state.connection);
+            this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph);
+            this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
+                this.close();
+            });
+        } else {
+            this.setState({ graphNameStyle: {color: 'red'}});
+        }
     }
 
     onButtonClicked(action: string): void {
@@ -99,8 +112,8 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
                       </ReactBootstrap.Modal.Header>
 
                       <ReactBootstrap.Modal.Body>
-                          <input name="graphName" id="graphName" type="text" value={this.state.graphName}
-                            onChange={this.handleInputChange.bind(this)} list="graphlist" placeholder="graph name" />
+                          <input name="graphName"  id="graphName" type="text" value={this.state.graphName}
+                            onChange={this.handleInputChange.bind(this)} style={this.state.graphNameStyle}/>
                           <textarea name="connection" className="code" value={this.state.connection} onChange={this.handleInputChange.bind(this)}/>
                       </ReactBootstrap.Modal.Body>
 

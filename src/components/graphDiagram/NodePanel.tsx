@@ -85,8 +85,9 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
     }
 
     render() {
+        let nodeId: string = this.props.appModel.activeNode ? this.props.appModel.activeNode.id : ""
         return  <div className="editor-panel well" id="nodeEditorPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Node [{this.props.appModel.activeNode.id}]</h4>
+                    <h4 className="pull-left" style={{marginBottom:20}}>Node [{nodeId}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                         <tbody>

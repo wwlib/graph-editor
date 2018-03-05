@@ -26,7 +26,7 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
 
     componentWillReceiveProps(nextProps: ModalExportProps) {
         // console.log(`ModalExport: componentWillReceiveProps`, nextProps);
-        if (nextProps.appModel) {
+        if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
             let exportedData: string = "DATA";
             switch(nextProps.exportMode) {
                 case "cypher":
