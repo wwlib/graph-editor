@@ -95,12 +95,17 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                 this.openModalFileDetails();
                 break;
             case 'save':
-                this.props.appModel.saveActiveGraph();
+                this.save();
         		break;
         }
     }
 
     save(): void {
+        if (this.state.graphName != '<filename>') {
+            this.props.appModel.saveActiveGraph();
+        } else {
+            this.openModalFileDetails();
+        }
     }
 
     openModalExport(exportMode: string) {
