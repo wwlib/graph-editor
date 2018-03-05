@@ -5,10 +5,10 @@ const ensureDir = require('ensureDir');
 const osenv = require('osenv');
 const jsonfile = require('jsonfile');
 
-// let configPath = path.resolve(osenv.home(), ".graph-editor/config.json");
-let configPath = path.resolve("data/app-config.json");
+// let configPath = path.resolve(osenv.home(), ".graph-editor/settings.json");
+let configPath = path.resolve("data/app-settings.json");
 
-export default class Config extends EventEmitter {
+export default class Settings extends EventEmitter {
 
     private _data: any;
     private _timestamp: number;

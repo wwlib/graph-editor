@@ -11,37 +11,19 @@ export default class Application extends React.Component < ApplicationProps, App
 
     componentWillMount() {
         this.setState(({lastUpdateTime}) => ({lastUpdateTime: 0}));
-        this.props.model.on('updateModel', (model: AppModel) => {
-            console.log(`Application: onUpdateModel`);
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
-        });
+        // this.props.model.on('updateModel', (model: AppModel) => {
+        //     console.log(`Application: onUpdateModel`);
+        //     this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
+        // });
     }
 
     render() {
         return (
-            // <div className="container">
-            //     <div className="row">
-            //         <div className="col-sm-12">
-                    <GraphEditor
-                        appModel={this.props.model}
-                        width={960} //{window.screen.availWidth}
-                        height={640} //{window.screen.availHeight}
-                        graphData={this.props.model.graphData} />
-            //         </div>
-            //     </div>
-            // </div>
+            <GraphEditor
+                appModel={this.props.model}
+                width={960} //{window.screen.availWidth}
+                height={640} //{window.screen.availHeight}
+            />
         );
-    }
-
-    onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
-        // switch (action) {
-        //     case 'save':
-        //         this.props.model.save();
-        //         break;
-        //     case 'reload':
-        //         this.props.model.reload();
-        //         break;
-        // }
     }
 }

@@ -7,43 +7,38 @@ import {
 } from 'graph-diagram';
 import AppModel from '../../model/AppModel';
 
-export interface RelationshipPanelProps { appModel: AppModel}
-export interface RelationshipPanelState { type: string, properties: string, lastUpdateTime: number }
+export interface RelationshipPanelProps { appModel: AppModel, hideRelationshipPanelCallback: any}
+export interface RelationshipPanelState { type: string, properties: string }
 
 export default class RelationshipPanel extends React.Component<RelationshipPanelProps, RelationshipPanelState> {
+
+    private _setPropertiesHandler: any = this.setProperties.bind(this);
 
     constructor(props: any) {
         super(props);
     }
 
     componentWillMount() {
-
-
         this.setState({
             type: "",
             properties: ""
         });
-
-        this.props.appModel.on('updateActiveRelationship', (model: Model) => {
-            let properties: string = "";
-            if (this.props.appModel.activeRelationship.properties.listEditable().length > 0) {
-              properties = this.props.appModel.activeRelationship.properties.listEditable().reduce(
-                function(previous: string, property: any) {
-                  return previous + property.key + ": " + property.value + "\n";
-                }, ""
-              );
-            }
-
-            this.setState({
-                type: this.props.appModel.activeRelationship.caption,
-                properties: properties
-            });
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
-        });
+        this.props.appModel.on('updateActiveRelationship', this._setPropertiesHandler);
     }
 
     componentDidMount() {
 
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('updateActiveRelationship', this._setPropertiesHandler);
+    }
+
+    setProperties(data: any): void {
+        this.setState({
+            type: data.label,
+            properties: data.properties
+        });
     }
 
     handleInputChange(event: any) {
@@ -68,30 +63,31 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
         switch (action) {
             case 'save':
                 this.save();
+                this.props.appModel.onRedraw();
+                break;
+            case "reverse":
+                this.props.appModel.reverseActiveRelationship();
+                this.props.appModel.onRedraw();
+                break;
+            case "delete":
+                this.props.appModel.deleteActiveRelationship();
+                this.props.appModel.onRedraw();
+                break;
+            case 'cancel':
                 break;
         }
+        this.props.hideRelationshipPanelCallback();
+
     }
 
     save(): void {
-        let relationship: Relationship = this.props.appModel.activeRelationship;
-        relationship.caption = this.state.type;
-        relationship.properties.clearAll();
-        this.state.properties.split("\n").forEach((line: string) => {
-            let tokens = line.split(/: */);
-            if (tokens.length === 2) {
-                var key = tokens[0].trim();
-                var value = tokens[1].trim();
-                if (key.length > 0 && value.length > 0) {
-                    relationship.properties.set(key, value);
-                }
-            }
-        });
-        this.props.appModel.saveActiveRelationship();
+        this.props.appModel.saveActiveRelationship(this.state.type, this.state.properties);
     }
 
     render() {
+        let relationshipId: string = this.props.appModel.activeRelationship ? this.props.appModel.activeRelationship.id : ""
         return  <div className="editor-panel well" id="relationshipEditorPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship [{this.props.appModel.activeRelationship.id}]</h4>
+                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship [{relationshipId}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                         <tbody>
@@ -109,8 +105,14 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
-                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 150}}
+                    <ReactBootstrap.Button bsStyle={'success'} key={"save"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'warning'} key={"reverse"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "reverse")}>Reverse</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'danger'} key={"delete"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
 
                 </div>;
     }

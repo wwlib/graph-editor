@@ -28,6 +28,7 @@ import {
 } from 'graph-diagram';
 
 import ToolsPanel from './ToolsPanel';
+import CypherPanel from './CypherPanel';
 import NodePanel from './NodePanel';
 import RelationshipPanel from './RelationshipPanel';
 import AppModel from '../../model/AppModel';
@@ -36,10 +37,12 @@ export interface GraphEditorProps {
   appModel: AppModel;
   width: number;
   height: number;
-  graphData: d3Types.d3Graph;
 }
 export interface GraphEditorState {
   scale: number;
+  showNodePanel: boolean;
+  showRelationshipPanel: boolean;
+  showCypherPanel: boolean;
   lastUpdateTime: number;
 }
 
@@ -48,36 +51,14 @@ let svgContainer: any;
 let svg_g: any;
 let simulation: any;
 let simulationTickCount: number = 0;
+let simulationMaxTicks: number;
 let simNodes: any;
 let simLinks: any;
-let simData = JSON.parse(`
-{
-  "nodes": [{
-      "r": 17
-  }, {
-      "r": 8
-  }, {
-      "r": 27
-  }],
-  "links": [{
-      "source": "0",
-      "target": "1"
-  }, {
-      "source": "1",
-      "target": "2"
-  }, {
-      "source": "2",
-      "target": "0"
-  }]
-}
-`);
+let simData: any;
 
 export default class GraphEditor extends React.Component < GraphEditorProps, GraphEditorState > {
 
     public diagram: Diagram;
-    // public graphModel: Model;
-    public newNode: Node = null;
-    public newRelationship: Relationship = null;
 
     private _dragStartHandler: any = this.dragStart.bind(this);
     private _dragEndHandler: any = this.dragEnd.bind(this);
@@ -86,13 +67,35 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     private _editNodeHandler: any = this.editNode.bind(this);
     private _editRelationshipHandler: any = this.editRelationship.bind(this);
+    private _onGraphLoadedHandler: any = this.onGraphLoaded.bind(this);
+    private _onRedrawGraphHandler: any = this.onRedrawGraph.bind(this);
 
     componentWillMount() {
         thiz = this;
-        this.setState(({scale, lastUpdateTime}) => ({scale: 1.0, lastUpdateTime: 0}));
+        this.setState({
+            scale: 1.0,
+            showNodePanel: false,
+            showRelationshipPanel: false,
+            showCypherPanel: false,
+            lastUpdateTime: 0
+        });
+
+        this.props.appModel.on('redrawGraph', this._onRedrawGraphHandler);
+        this.props.appModel.on('graphLoaded', this._onGraphLoadedHandler);
       }
 
     componentDidMount() {
+    }
+
+    componentWillUnmount() {
+        this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
+        this.props.appModel.removeListener('graphLoaded', this._onGraphLoadedHandler);
+    }
+
+    componentWillReceiveProps(nextProps: GraphEditorProps) {
+    }
+
+    initGraphEditor(): void {
         this.setupSvg();
 
         this.diagram = new Diagram()
@@ -173,34 +176,36 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                     } )
                     .attr("d", function(d: any) { return d.arrow.outline; } );
             });
-        console.log(`diagram: `, this.diagram);
         this.draw();
-        this.startSimulation();
+
+        let showCypherPanel: boolean = false;
+        if (this.props.appModel.activeGraph.type == "neo4j") {
+            showCypherPanel = true;
+            this.startSimulation();
+        }
+        this.setState({
+            scale: 1.0,
+            showNodePanel: false,
+            showRelationshipPanel: false,
+            showCypherPanel: showCypherPanel,
+        });
     }
 
-    // parseMarkup( markup: any )
-    // {
-    //     var container: any = select( "body" ).append( "div" );
-    //     container.node().innerHTML = markup;
-    //     var model = Markup.parse( container.select("ul.graph-diagram-markup"));
-    //     container.remove();
-    //     return model;
-    // }
+    onGraphLoaded(): void {
+        this.initGraphEditor();
+    }
+
+    onRedrawGraph(): void {
+        this.draw();
+    }
 
     addNode() {
-        this.newNode = this.props.appModel.graphModel.createNode();
-        var svgElement = document.getElementById('svgElement')
-        this.newNode.x = svgElement.clientWidth / 2;
-        this.newNode.y = svgElement.clientHeight / 2;
-        console.log(`addNode: `, this.newNode);
-        //this.save( formatMarkup() );
-        this.draw();
+        this.props.appModel.addNode();
     }
 
     // bound to this via _dragStartHandler
     dragStart() {
-        // console.log(`dragStart: ${event.x}, ${event.y}`, this);
-        this.newNode = null;
+        this.props.appModel.newNode = null;
     }
 
     dragNode(__data__: any)
@@ -208,33 +213,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         var layoutNode: LayoutNode = __data__ as LayoutNode;
         var graphNode: Node = layoutNode.model as Node;
         graphNode.drag(event.dx, event.dy);
-        //diagram.scaling(Scaling.growButDoNotShrink);
         this.draw();
     }
 
     dragRing(__data__: any)
     {
         // console.log(`dragRing: ${event.x}, ${event.y}`);
-        var node: Node = __data__.model as Node;
-        if ( !this.newNode )
-        {
-            this.newNode = this.props.appModel.graphModel.createNode();
-            this.newNode.x = event.x;
-            this.newNode.y = event.y;
-            // console.log(`dragRing: this.newRelationship ${node.id}, ${this.newNode.id}`);
-            this.newRelationship = this.props.appModel.graphModel.createRelationship( node, this.newNode );
-        }
-        var connectionNode = this.findClosestOverlappingNode( this.newNode );
-        if ( connectionNode )
-        {
-            this.newRelationship.end = connectionNode
-        } else
-        {
-            this.newRelationship.end = this.newNode;
-        }
-        // node = this.newNode;
-        this.newNode.drag(event.dx, event.dy);
-        //diagram.scaling(Scaling.growButDoNotShrink);
+        this.props.appModel.onDragRing(__data__, event);
         this.draw();
     }
 
@@ -242,60 +227,23 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     dragEnd()
     {
         // console.log(`dragEnd: ${event.x}, ${event.y}`, this);
-        if ( this.newNode )
-        {
-            this.newNode.dragEnd();
-            if ( this.newRelationship && this.newRelationship.end !== this.newNode )
-            {
-                this.props.appModel.graphModel.deleteNode( this.newNode );
-            }
-        }
-        this.newNode = null;
-        // save( formatMarkup() );
-        //diagram.scaling(Scaling.centerOrScaleDiagramToFitSvgSmooth);
+        this.props.appModel.onDragEnd();
         this.draw();
     }
 
-    findClosestOverlappingNode( node: any )
-    {
-        var closestNode = null;
-        var closestDistance = Number.MAX_VALUE;
-
-        var allNodes = this.props.appModel.graphModel.nodeList();
-
-        for ( var i = 0; i < allNodes.length; i++ )
-        {
-            var candidateNode = allNodes[i];
-            if ( candidateNode !== node )
-            {
-                var candidateDistance = node.distanceTo( candidateNode ) * this.props.appModel.graphModel.internalScale;
-                if ( candidateDistance < 50 && candidateDistance < closestDistance )
-                {
-                    closestNode = candidateNode;
-                    closestDistance = candidateDistance;
-                }
-            }
-        }
-        return closestNode;
-    }
-
-    ////////
-
     editNode(__data__: any)
     {
-        this.props.appModel.activeNode = __data__.model;
-        this.props.appModel.onUpdateActiveNode(null);
-        console.log(`editnode: `, this.props.appModel.activeNode);
+        console.log(this.props.appModel.activeNode);
+        this.showNodePanel();
+        this.props.appModel.activeNode = __data__.model as Node;
     }
 
     editRelationship(__data__: any)
     {
-      this.props.appModel.activeRelationship = __data__.model;
-      this.props.appModel.onUpdateActiveRelationship(null);
-        console.log(`editRelationship: `, this.props.appModel.activeRelationship);
+        console.log(this.props.appModel.activeRelationship);
+        this.showRelationshipPanel();
+        this.props.appModel.activeRelationship = __data__.model as Relationship;
     }
-
-    ////////
 
     setupSvg() {
       if (svg_g) {
@@ -375,8 +323,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         }
     }
 
-    startSimulation(): void {
-        console.log(`startSimulation:`);
+    startSimulation(ticks?: number): void {
+        simulationMaxTicks = ticks || 20;
+        // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
         simulation = d3Force.forceSimulation()
@@ -387,42 +336,11 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             .force("y", d3Force.forceY(0))
             .force("x", d3Force.forceX(0));
 
-        // simNodes = svg_g.select( "g.layer.nodes" )
-        //     .selectAll("circle")
-        //     .data(this.diagram.layout.layoutModel.nodes)
-        //
-        // simLinks = svg_g.select( "g.layer.relationships" )
-        //     .selectAll("path");
-
         simData = thiz.generateSimData(thiz.diagram);
-        console.log(`simData`, simData);
-
-        // simLinks = svg_g.append("g")
-        //     .attr("class", "links")
-        //     .selectAll("line")
-        //     .data(simData.links)
-        //     .enter()
-        //     .append("line")
-        //     .attr("stroke", "black")
 
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
             .data(simData.nodes)
-
-        // simNodes= svg_g.append("g")
-        //     .attr("class", "nodes")
-        //     .selectAll("circle")
-        //     .data(simData.nodes)
-        //     .enter().append("circle")
-        //     .attr("r", function(d: any){  return d.r + 8 })
-        //     .call(drag()
-        //         .on("start", thiz.dragstarted)
-        //         .on("drag", thiz.dragged)
-        //         .on("end", thiz.dragended));
-
-        console.log(`simNodes`, simNodes);
-        // console.log(`simLinks`, simLinks);
-
 
         simulation
             .nodes(simData.nodes)
@@ -431,47 +349,21 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
         simulation.force("link")
             .links(simData.links);
-
-        //simulation.stop();
-    }
-
-    dragstarted(d: any) {
-        // if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    dragged(d: any) {
-        d.fx = event.x;
-        d.fy = event.y;
-    }
-
-    dragended(d: any) {
-        // if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
     }
 
     ticked() {
-        // simLinks
-        //     .attr("x1", function(d: any) { return d.source.x; })
-        //     .attr("y1", function(d: any) { return d.source.y; })
-        //     .attr("x2", function(d: any) { return d.target.x; })
-        //     .attr("y2", function(d: any) { return d.target.y; });
-
         simNodes
             .attr("cx", function(d: any) { return d.x; })
             .attr("cy", function(d: any) { return d.y; });
 
-        // console.log(`tick: ${simulationTickCount}`);
         simulationTickCount++
-        if (simulationTickCount >= 20) {
+        if (simulationTickCount >= simulationMaxTicks) {
             thiz.ended();
         }
     }
 
     ended() {
-        console.log(`ended simulation after ${simulationTickCount} ticks`);
+        // console.log(`ended simulation after ${simulationTickCount} ticks`);
         simulation.stop();
         simData.nodes.forEach((node: any) => {
             node.layoutNode.x = node.x;
@@ -490,7 +382,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'addNode':
                 this.addNode();
@@ -498,6 +389,10 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             case 'bubbles':
                 this.diagram.toggleRenderPropertyBubblesFlag();
                 this.draw();
+                break;
+            case 'forceLayout':
+                this.startSimulation(20);
+                break;
         }
     }
 
@@ -510,7 +405,43 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         this.draw();
     }
 
+    hideCypherpPanel(): void {
+        this.setState({
+            showCypherPanel: false
+        });
+    }
+
+    showNodePanel(): void {
+        this.setState({
+            showNodePanel: true,
+            showRelationshipPanel: false
+        });
+    }
+
+    hideNodePanel(): void {
+        this.setState({
+            showNodePanel: false
+        });
+    }
+
+    showRelationshipPanel(): void {
+        this.setState({
+            showNodePanel: false,
+            showRelationshipPanel: true
+        });
+    }
+
+    hideRelationshipPanel(): void {
+        this.setState({
+            showRelationshipPanel: false
+        });
+    }
+
     render() {
+        let nodePanel: JSX.Element = this.state.showNodePanel && <NodePanel appModel={this.props.appModel} hideNodePanelCallback={this.hideNodePanel.bind(this)} />;
+        let relationshipPanel: JSX.Element = this.state.showRelationshipPanel && <RelationshipPanel appModel={this.props.appModel} hideRelationshipPanelCallback={this.hideRelationshipPanel.bind(this)} />;
+        let cypherPanel: JSX.Element = this.state.showCypherPanel && <CypherPanel appModel={this.props.appModel} />;
+
         return (
             <div>
                 <div id="svgContainer"></div>
@@ -519,11 +450,14 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                         onClick={this.onButtonClicked.bind(this, "addNode")}><i className="icon-plus"></i> Node</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="bubblesButton" bsStyle={'default'} key={"bubbles"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
+                    <ReactBootstrap.Button id="forceLayoutButton" bsStyle={'default'} key={"forceLayout"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "forceLayout")}>Force</ReactBootstrap.Button>
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />
-                <NodePanel appModel={this.props.appModel} />
-                <RelationshipPanel appModel={this.props.appModel} />
+                {cypherPanel}
+                {nodePanel}
+                {relationshipPanel}
             </div>
         );
     }

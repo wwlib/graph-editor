@@ -4,23 +4,18 @@ import AppModel from './AppModel';
 import Graph, { GraphConnection } from './Graph';
 const jsonfile = require('jsonfile');
 const ensureDir = require('ensureDir');
-// const isuuid = require('isuuid');
 
 export default class GraphSet {
 
     public model: AppModel;
-    // public graphs: Map<string, Graph>;
     public graphNames: Map<string, GraphConnection>;
 
     constructor(model: AppModel) {
         this.model = model;
-        // this.graphs = new Map<string, Graph>();
         this.graphNames = new  Map<string, GraphConnection>();
-        // this.loadGraphNames();
     }
 
     addGraph(graph: Graph): Graph {
-        // this.graphs.set(graph.name, graph);
         this.graphNames.set(graph.name, graph.connection);
         return graph;
     }
@@ -98,22 +93,6 @@ export default class GraphSet {
             });
         });
     }
-
-    // loadGraphWithUuid(uuid: string):  Promise<Graph> {
-    //     return new Promise<Graph>((resolve, reject) => {
-    //         let graph: Graph;
-    //         let filepath: string =  path.resolve(this.model.userDataPath, `${uuid}.json`);
-    //         this.load(filepath, (err: any, data: any) => {
-    //             if (err) {
-    //                 reject(err);
-    //             } else {
-    //                 let graph: Graph = new Graph(uuid);
-    //                 graph.initWithJson(data);
-    //                 resolve(graph)
-    //             }
-    //         });
-    //     });
-    // }
 
     loadGraphWithName(name: string):  Promise<Graph> {
         return new Promise<Graph>((resolve, reject) => {
