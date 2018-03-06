@@ -1,0 +1,77 @@
+<html>
+<head>
+    <title>graph-diagram library</title>
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <style>
+      html {
+          display: table;
+          margin: auto;
+      }
+
+      body {
+          display: table-cell;
+          vertical-align: middle;
+      }
+    </style>
+</head>
+<body>
+
+    <h2 id="grapheditorreact">graph-editor-react</h2>
+
+    <h3 id="about">About</h3>
+
+    <p>graph-editor is an electron/react app for editing live neo4j databases.</p>
+    
+    <h3 id="install">install</h3>
+
+    <p><code>npm install</code></p>
+
+    <h3 id="build">build</h3>
+
+    <p><code>npm run build</code></p>
+
+    <h3 id="electron">electron</h3>
+
+    <p>npm install -g electron</p>
+
+    <h3 id="run">run</h3>
+
+    <p><code>electron .</code></p>
+
+    <h3 id="usage">Usage</h3>
+
+    <ul>
+    <li>Note: This is a very early prototype intended for experimentation.</li>
+
+    <li>Use the New File button to create a new local graph file</li>
+
+    <li>Double-click nodes and relationships to edit them</li>
+    </ul>
+
+    <p><img src="./img/GraphEditor.png" alt="graph editor" /></p>
+
+    <p>-Use the New Neo4j button to create a connection to a live neo4j database</p>
+
+    <ul>
+    <li>set the connection url, user, password, etc.</li>
+    </ul>
+
+    <pre><code>"connection": {
+      "type": "neo4j",
+      "url": "bolt://localhost:7687",
+      "user": "neo4j",
+      "password": "jibo",
+      "initialCypher": "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100"
+    }
+    </code></pre>
+
+    <p><img src="./img/GraphEditor_NewNeo4j.png" alt="new neo4j" /></p>
+
+    <ul>
+    <li>Changes in the editor are reflected in the neo4j browser</li>
+    </ul>
+
+    <p><img src="./img/GraphEditor_LiveNeo4j.png" alt="live neo4j" /></p>
+
+</body>
+</html>
