@@ -30,7 +30,7 @@ npm install -g electron
   "type": "neo4j",
   "url": "bolt://localhost:7687",
   "user": "neo4j",
-  "password": "jibo",
+  "password": "neo4j",
   "initialCypher": "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100"
 }
 ```
