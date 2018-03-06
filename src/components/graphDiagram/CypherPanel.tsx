@@ -13,7 +13,7 @@ import AppModel from '../../model/AppModel';
 import Neo4jGraphConfig, { SavedCypher } from '../../model/Neo4jGraphConfig';
 
 export interface CypherPanelProps { appModel: AppModel}
-export interface CypherPanelState { activeCypher: SavedCypher, selectedCyperIndex: number, status: string, visible: boolean, lastUpdateTime: number }
+export interface CypherPanelState { activeCypher: SavedCypher, selectedCyperIndex: number, status: string, lastUpdateTime: number }
 
 export default class CypherPanel extends React.Component<CypherPanelProps, CypherPanelState> {
 
@@ -27,19 +27,17 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     }
 
     componentWillMount() {
-        this.setState({
+        this.setState(prevState => ({
             activeCypher: {name: "", cypher: ""},
             selectedCyperIndex: -1,
-            status: "",
-            visible: true
-        });
+            status: ""
+        }));
 
         this.props.appModel.on('onCypherExecuted', this._onCypherExecutedHandler);
         this.props.appModel.on('onCypherExecutionError', this._onCypherExecutionErrorHandler);
     }
 
     componentDidMount() {
-
     }
 
     componentWillUnmount() {

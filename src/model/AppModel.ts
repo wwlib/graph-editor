@@ -72,15 +72,15 @@ export default class AppModel extends EventEmitter {
         return model;
     }
 
-    newGraph(): void {
+    newGraph(options?: any): void {
+        options = options || {};
         let svgElement = document.getElementById('svgElement');
         let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
         let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
-        let graphData: any = {
-            name: '<filename>',
-            connection: {type: "file"},
-            type: "file",
-            config: {},
+        let newGraphJSON: any = {
+            name: options.graphName || '<filename>',
+            connection: options.connection || {type: "file"},
+            config: options.config || {},
             scale: 1.0,
             css: `
 circle.node-base {
@@ -92,34 +92,65 @@ circle.node-base {
             d3Graph: null,
             markup: null
         }
-        this.activeGraph = new Graph().initWithJson(graphData);
-        this.applyActiveGraphCss();
-        this.graphModel = new Model();
-        let node: Node = this.graphModel.createNode();
-        node.x = x;
-        node.y = y;
-        node.caption = 'New Node';
-        this._activeNode = this.graphModel.nodeList()[0];
-        this._activeRelationship = null;
-        this.onGraphLoaded();
+
+        let newGraph: Graph = new Graph().initWithJson(newGraphJSON);
+        console.log(`newGraphJSON: `, newGraphJSON, newGraph);
+        if (newGraph.name != '<filename>') {
+            this.graphSet.addGraph(newGraph);
+            this.saveGraph(newGraph);
+        }
+        if (newGraph.type == "neo4j") {
+            this.initGraph(newGraph);
+        } else {
+            this.graphModel = new Model();
+            let node: Node = this.graphModel.createNode();
+            node.x = x;
+            node.y = y;
+            node.caption = 'New Node';
+            this._activeNode = this.graphModel.nodeList()[0];
+            this._activeRelationship = null;
+            this.activeGraph = newGraph;
+            this.applyActiveGraphCss();
+            this.onUpdateActiveGraph();
+        }
     }
 
     initGraphWithName(name: string) {
         console.log(`initGraphWithName: ${name}`);
+        this.graphSet.loadGraphWithName(name)
+            .then((graph:Graph) => {
+                this.initGraph(graph);
+            });
+    }
+
+    initGraph(graph: Graph): void {
         let svgElement = document.getElementById('svgElement');
         let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
         let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
-        this.graphSet.loadGraphWithName(name)
-            .then((graph:Graph) => {
-                let connection: GraphConnection = graph.connection;
-                switch(graph.type) {
-                    case "file":
-                        console.log("initGraphWithName: type: file");
-                        if (graph.markup) {
-                            this.graphModel = this.parseMarkup(graph.markup);
-                        } else {
-                            this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, {x: x, y: y});
-                        }
+        switch(graph.type) {
+            case "file":
+                console.log("initGraph: type: file");
+                if (graph.markup) {
+                    this.graphModel = this.parseMarkup(graph.markup);
+                } else {
+                    this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, {x: x, y: y});
+                }
+                this.activeNode = this.graphModel.nodeList()[0];
+                this._activeRelationship = this.graphModel.relationshipList()[0];
+                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
+                this.activeGraph = graph;
+                this.applyActiveGraphCss();
+                console.log(`activeGraph: `, graph);
+                // this.emit('ready', this);
+                this.onUpdateActiveGraph();
+                break;
+            case "neo4j":
+                this.neo4jController = new Neo4jController(graph.connection);
+                console.log(`graph: `, graph);
+                graph.config = new Neo4jGraphConfig(graph.config);
+                this.neo4jController.getCypherAsD3(graph.connection.initialCypher)
+                    .then(data => {
+                        this.graphModel = ModelToD3.parseD3(data, null, {x: x, y: y});
                         this.activeNode = this.graphModel.nodeList()[0];
                         this._activeRelationship = this.graphModel.relationshipList()[0];
                         console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
@@ -127,27 +158,10 @@ circle.node-base {
                         this.applyActiveGraphCss();
                         console.log(`activeGraph: `, graph);
                         // this.emit('ready', this);
-                        this.onGraphLoaded();
-                        break;
-                    case "neo4j":
-                        this.neo4jController = new Neo4jController(connection);
-                        console.log(`graph: `, graph);
-                        graph.config = new Neo4jGraphConfig(graph.config);
-                        this.neo4jController.getCypherAsD3(graph.config.initialCypher)
-                            .then(data => {
-                                this.graphModel = ModelToD3.parseD3(data, null, {x: x, y: y});
-                                this.activeNode = this.graphModel.nodeList()[0];
-                                this._activeRelationship = this.graphModel.relationshipList()[0];
-                                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
-                                this.activeGraph = graph;
-                                this.applyActiveGraphCss();
-                                console.log(`activeGraph: `, graph);
-                                // this.emit('ready', this);
-                                this.onGraphLoaded();
-                            });
-                        break;
-                }
-            });
+                        this.onUpdateActiveGraph();
+                    });
+                break;
+        }
     }
 
     saveActiveNode(label: string, propertiesText: any, oldLabel?: string): void {
@@ -241,8 +255,8 @@ circle.node-base {
     //     this.emit('graphModel', this);
     // }
 
-    onGraphLoaded(event?: any): void {
-        this.emit('graphLoaded');
+    onUpdateActiveGraph(event?: any): void {
+        this.emit('updateActiveGraph');
     }
 
     onUpdateActiveNode(event?: any): void {
@@ -597,12 +611,16 @@ circle.node-base {
 
     saveActiveGraph(): void {
         console.log(`saveActiveGraph: `, this.activeGraph, this.graphModel);
-        if (this.activeGraph) {
-            if (this.activeGraph.type == "file") {
-                this.activeGraph.d3Graph = ModelToD3.convert(this.graphModel);
-                this.activeGraph.markup = this.getMarkup();
+        this.saveGraph(this.activeGraph);
+    }
+
+    saveGraph(graph: Graph): void {
+        if (graph) {
+            if (graph.type == "file") {
+                graph.d3Graph = ModelToD3.convert(this.graphModel);
+                graph.markup = this.getMarkup();
             }
-            this.graphSet.saveGraph(this.activeGraph);
+            this.graphSet.saveGraph(graph);
         }
     }
 

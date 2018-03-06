@@ -15,14 +15,12 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     }
 
     componentWillMount() {
-
-        this.setState({
+        this.setState(prevState => ({
                 showModalState: false,
                 graphName: "",
                 graphNameStyle: {color: 'black'},
                 connection: ""
-            }, () => {
-        });
+        }));
     }
 
     componentWillUnmount() {
@@ -30,64 +28,78 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     }
 
     componentWillReceiveProps(nextProps: ModalFileDetailsProps) {
-        // console.log(`ModalFileDetails: componentWillReceiveProps`, nextProps);
-        if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
-            this.setState({
+        console.log(`ModalFileDetails: componentWillReceiveProps`, nextProps);
+        let connection: string = `{}`;
+        let graphName: string = "";
+        switch (nextProps.fileDetailsMode) {
+            case "details":
+                connection = JSON.stringify(nextProps.appModel.activeGraph.connection, null, 2);
+                graphName = nextProps.appModel.activeGraph.name;
+                break;
+            case "newFile":
+                graphName = "<filename>";
+                connection = JSON.stringify({type: "file"}, null, 2);
+                break;
+            case "newNeo4j":
+                graphName = "<filename>";
+                connection = JSON.stringify({
+                  "type": "neo4j",
+                  "url": "bolt://localhost:7687",
+                  "user": "neo4j",
+                  "password": "",
+                  "initialCypher": "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100"
+                }, null, 2);
+                break;
+        }
+        if (nextProps.showModalProp) {
+            this.setState(prevState => ({
                 showModalState: nextProps.showModalProp,
-                graphName: nextProps.appModel.activeGraph.name,
+                graphName: graphName,
                 graphNameStyle: {color: 'black'},
-                connection: JSON.stringify(nextProps.appModel.activeGraph.connection, null, 2)
-            }, () => {
-                // console.log(this.state.exportedData);
-            });
+                connection: connection
+            }));
         }
     }
 
     componentDidUpdate(nextProps: ModalFileDetailsProps, nextState: ModalFileDetailsState): void {
-        // console.log(`ModalFileDetails: componentDidUpdate`);
     }
 
-    close() {
-        // console.log(`ModalFileDetails: close`);
-        if (this.state.graphName != "<filename>") {
-            this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
-                this.props.onClose();
-            });
-        } else {
-            this.setState({ graphNameStyle: {color: 'red'}});
-        }
+    close(graphName?: string) {
+        this.setState(prevState => {
+            this.props.onClose(graphName);
+            return { showModalState: false, graphName: '', connection: ''};
+        });
     }
 
     onHide() {
-        // console.log(`ModalFileDetails: onHide`);
         this.close();
     }
 
     save() {
-        // console.log(`ModalFileDetails: save: ${this.props.fileDetailsMode}`, this.state.graphName, this.state.connection, JSON.parse(this.state.connection));
-        if (this.state.graphName != "<filename>") {
+        if (this.props.fileDetailsMode == "newFile" || this.props.fileDetailsMode == "newNeo4j") {
+            let options: any = {};
+            options.fileDetailsMode = this.props.fileDetailsMode;
+            options.graphName = this.state.graphName;
+            options.connection = JSON.parse(this.state.connection);
+            this.props.appModel.newGraph(options);
+        } else {
             this.props.appModel.activeGraph.name = this.state.graphName;
             this.props.appModel.activeGraph.connection = JSON.parse(this.state.connection);
-            this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph);
-            // console.log(this.props.appModel.activeGraph);
-            this.setState({ showModalState: false, graphName: '', connection: ''}, () => {
-                this.close();
-            });
-        } else {
-            this.setState({ graphNameStyle: {color: 'red'}});
+            this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph); //TODO if name hass changed, the graph should be copied
         }
+        this.close(this.state.graphName);
     }
 
     onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'save':
-                this.save();
+                if (this.state.graphName != "<filename>") {
+                    this.save();
+                } else {
+                    this.setState(prevState => ({graphNameStyle: {color: 'red'}}));
+                }
                 break;
             case 'cancel':
-                this.close();
-                break;
-            case 'close':
                 this.close();
                 break;
         }
@@ -95,13 +107,12 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
 
     handleInputChange(event: any) {
         let nativeEvent: any = event.nativeEvent;
-        // console.log(`handleInputChange: ${nativeEvent.target.name}`); // ${nativeEvent.target.value}`, this.state);
         switch(nativeEvent.target.name) {
             case 'graphName':
-                this.setState({ graphName: nativeEvent.target.value});
+                this.setState(prevState => ({ graphName: nativeEvent.target.value}));
                 break;
             case 'connection':
-                this.setState({ connection: nativeEvent.target.value});
+                this.setState(prevState => ({ connection: nativeEvent.target.value}));
                 break;
         }
     }
@@ -109,7 +120,7 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     render() {
         return  <ReactBootstrap.Modal show={this.state.showModalState} onHide={this.onHide.bind(this)}>
                       <ReactBootstrap.Modal.Header>
-                          <ReactBootstrap.Modal.Title>File Details: {this.props.fileDetailsMode}</ReactBootstrap.Modal.Title>
+                          <ReactBootstrap.Modal.Title>Graph Details: {this.props.fileDetailsMode}</ReactBootstrap.Modal.Title>
                       </ReactBootstrap.Modal.Header>
 
                       <ReactBootstrap.Modal.Body>

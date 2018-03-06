@@ -9,6 +9,7 @@ export type GraphConnection = {
     url?: string;
     user?: string;
     password?: string;
+    initialCypher?: string;
 }
 
 export type GraphConfig = any;
@@ -24,6 +25,8 @@ export type GraphData = {
 }
 
 export default class Graph {
+
+    public static DEFAULT_CYPHER: string = "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100";
 
     public name: string;
     public connection: GraphConnection;
@@ -41,7 +44,8 @@ export default class Graph {
       this.name = json.name;
       this.connection = json.connection;
       if (this.type == 'neo4j') {
-          this.config = new Neo4jGraphConfig(json.config)
+          this.config = new Neo4jGraphConfig(json.config);
+          this.connection.initialCypher = this.connection.initialCypher || Graph.DEFAULT_CYPHER;
       } else {
           this.config = json.config;
       }

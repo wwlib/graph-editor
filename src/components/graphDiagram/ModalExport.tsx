@@ -15,17 +15,14 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
     }
 
     componentWillMount() {
-        // console.log(`ModalExport: componentWillMount`);
-        this.setState({ showModalState: false, exportedData: ''}, () => {
-        });
+        this.setState(prevState => ({ showModalState: false, exportedData: ''}));
     }
 
     componentWillUnmount() {
-
     }
 
     componentWillReceiveProps(nextProps: ModalExportProps) {
-        // console.log(`ModalExport: componentWillReceiveProps`, nextProps);
+        console.log(`ModalExport: componentWillReceiveProps`, nextProps);
         if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
             let exportedData: string = "DATA";
             switch(nextProps.exportMode) {
@@ -45,28 +42,24 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                     exportedData = this.props.appModel.getCSS();
                     break;
             }
-            this.setState({
+            this.setState(prevState => ({
                 showModalState: nextProps.showModalProp,
                 exportedData: exportedData
-            }, () => {
-                // console.log(this.state.exportedData);
-            });
+            }));
         }
     }
 
     componentDidUpdate(nextProps: ModalExportProps, nextState: ModalExportState): void {
-        // console.log(`ModalExport: componentDidUpdate`);
     }
 
     close() {
-        // console.log(`ModalExport: close`);
-        this.setState({ showModalState: false, exportedData: ''}, () => {
+        this.setState(prevState => {
             this.props.onClose();
+            return { showModalState: false, exportedData: ''};
         });
     }
 
     onHide() {
-        // console.log(`ModalExport: onHide`);
         this.close();
     }
 
@@ -99,7 +92,6 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
     }
 
     onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'save':
                 this.save();
@@ -115,10 +107,9 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
 
     handleInputChange(event: any) {
         let nativeEvent: any = event.nativeEvent;
-        // console.log(`handleInputChange: ${nativeEvent.target.name}`); // ${nativeEvent.target.value}`, this.state);
         switch(nativeEvent.target.name) {
             case 'exportedData':
-                this.setState({ exportedData: nativeEvent.target.value});
+                this.setState(prevState => ({ exportedData: nativeEvent.target.value}));
                 break;
         }
     }

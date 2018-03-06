@@ -23,6 +23,8 @@ export interface ToolsPanelState {
 
 export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPanelState> {
 
+    // private _onUpdateActiveGraphHandler: any = this.onUpdateActiveGraph.bind(this);
+
     constructor(props: any) {
         super(props);
     }
@@ -32,27 +34,30 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
         if (this.props.appModel.activeGraph) {
             graphName = this.props.appModel.activeGraph.name;
         }
-        this.setState({
+        this.setState(prevState => ({
             graphName: graphName,
             graphScale: 1.0,
             showModal: false,
             exportMode: "markup",
             showFileDetailsModal: false,
             fileDetailsMode: null
-        });
+        }));
 
-        this.props.appModel.on('updateActiveGraph', (model: Model) => {
-
-            this.setState({
-                graphName: this.props.appModel.activeGraph.name,
-                graphScale: this.props.appModel.activeGraph.scale
-            });
-            this.setState(({lastUpdateTime}) => ({lastUpdateTime: new Date().getTime()}));
-        });
+        // this.props.appModel.on('updateActiveGraph', this._onUpdateActiveGraphHandler);
     }
 
     componentDidMount() {
+    }
 
+    componentWillUnmount() {
+        // this.props.appModel.removeListener('updateActiveGraph', this._onUpdateActiveGraphHandler);
+    }
+
+    onUpdateActiveGraph(): void {
+        this.setState(prevState => ({
+            graphName: this.props.appModel.activeGraph.name,
+            graphScale: this.props.appModel.activeGraph.scale
+        }));
     }
 
     handleInputChange(event: any) {
@@ -88,11 +93,13 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
         		this.openModalExport("css");
         		break;
             case 'details':
-                this.openModalFileDetails();
+                this.openModalFileDetails("details");
                 break;
-            case 'new':
-                this.props.appModel.newGraph();
-                this.openModalFileDetails();
+            case 'newFile':
+                this.openModalFileDetails("newFile");
+                break;
+            case 'newNeo4j':
+                this.openModalFileDetails("newNeo4j");
                 break;
             case 'save':
                 this.save();
@@ -104,7 +111,7 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
         if (this.state.graphName != '<filename>') {
             this.props.appModel.saveActiveGraph();
         } else {
-            this.openModalFileDetails();
+            this.openModalFileDetails("details");
         }
     }
 
@@ -116,12 +123,17 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
         this.setState({ showModal: false });
     }
 
-    openModalFileDetails(mode?: string) {
-        this.setState({ showFileDetailsModal: true, fileDetailsMode: mode });
+    openModalFileDetails(mode: string = "") {
+        this.setState(prevState => ({ showFileDetailsModal: true, fileDetailsMode: mode }));
     }
 
-    onCloseModalFileDetails() {
-        this.setState({ showFileDetailsModal: false, graphName: this.props.appModel.activeGraph.name });
+    onCloseModalFileDetails(graphName?: string) {
+        if (graphName) {
+            this.setState(prevState => ({ showFileDetailsModal: false, graphName: graphName }));
+        } else {
+            this.setState(prevState => ({ showFileDetailsModal: false}));
+        }
+
     }
 
     onMenuItemSelected(value: string) {
@@ -180,8 +192,10 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                           onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
                         <ReactBootstrap.Button bsStyle={'default'} key={"details"} style = {{width: 80}}
                           onClick={this.onButtonClicked.bind(this, "details")}>Details</ReactBootstrap.Button>
-                        <ReactBootstrap.Button bsStyle={'default'} key={"new"} style = {{width: 80}}
-                            onClick={this.onButtonClicked.bind(this, "new")}>New</ReactBootstrap.Button>
+                        <ReactBootstrap.Button bsStyle={'default'} key={"newFile"} style = {{width: 80}}
+                            onClick={this.onButtonClicked.bind(this, "newFile")}>New File</ReactBootstrap.Button>
+                        <ReactBootstrap.Button bsStyle={'default'} key={"newNeo4j"} style = {{width: 100}}
+                            onClick={this.onButtonClicked.bind(this, "newNeo4j")}>New Neo4j</ReactBootstrap.Button>
                     </div>
                   </div>
                 </div>;

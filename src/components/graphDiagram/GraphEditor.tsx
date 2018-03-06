@@ -67,7 +67,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     private _editNodeHandler: any = this.editNode.bind(this);
     private _editRelationshipHandler: any = this.editRelationship.bind(this);
-    private _onGraphLoadedHandler: any = this.onGraphLoaded.bind(this);
+    private _onUpdateActiveGraphHandler: any = this.onUpdateActiveGraph.bind(this);
     private _onRedrawGraphHandler: any = this.onRedrawGraph.bind(this);
 
     componentWillMount() {
@@ -81,7 +81,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         });
 
         this.props.appModel.on('redrawGraph', this._onRedrawGraphHandler);
-        this.props.appModel.on('graphLoaded', this._onGraphLoadedHandler);
+        this.props.appModel.on('updateActiveGraph', this._onUpdateActiveGraphHandler);
       }
 
     componentDidMount() {
@@ -89,7 +89,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     componentWillUnmount() {
         this.props.appModel.removeListener('redrawGraph', this._onRedrawGraphHandler);
-        this.props.appModel.removeListener('graphLoaded', this._onGraphLoadedHandler);
+        this.props.appModel.removeListener('updateActiveGraph', this._onUpdateActiveGraphHandler);
     }
 
     componentWillReceiveProps(nextProps: GraphEditorProps) {
@@ -178,20 +178,20 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             });
         this.draw();
 
-        let showCypherPanel: boolean = false;
+        // let showCypherPanel: boolean = false;
         if (this.props.appModel.activeGraph.type == "neo4j") {
-            showCypherPanel = true;
+            // showCypherPanel = true;
             this.startSimulation();
         }
-        this.setState({
-            scale: 1.0,
-            showNodePanel: false,
-            showRelationshipPanel: false,
-            showCypherPanel: showCypherPanel,
-        });
+        // this.setState(prevState => ({
+        //         scale: 1.0,
+        //         showNodePanel: false,
+        //         showRelationshipPanel: false,
+        //         showCypherPanel: showCypherPanel
+        // }));
     }
 
-    onGraphLoaded(): void {
+    onUpdateActiveGraph(): void {
         this.initGraphEditor();
     }
 
@@ -393,6 +393,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             case 'forceLayout':
                 this.startSimulation(20);
                 break;
+            case 'cypherPanel':
+                this.setState(prevState => ({showCypherPanel: !prevState.showCypherPanel}));
+                break;
         }
     }
 
@@ -452,6 +455,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                         onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="forceLayoutButton" bsStyle={'default'} key={"forceLayout"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "forceLayout")}>Force</ReactBootstrap.Button>
+                    <ReactBootstrap.Button id="cypherPanelButton" bsStyle={'default'} key={"cypherPanel"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "cypherPanel")}>Cypher</ReactBootstrap.Button>
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />
