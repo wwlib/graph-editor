@@ -150,8 +150,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
 
         // console.log(`render: `, this._savedCypherList);
 
-        return  <Draggable>
-                <div className="editor-panel well" id="cypherPanel">
+        return  <Draggable handle=".handle"><div className="editor-panel well" id="cypherPanel">
                     <h4 className="pull-left handle" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
@@ -195,7 +194,6 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                     <ReactBootstrap.Button bsStyle={'default'} key={"delete"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
 
-                </div>
-                </Draggable>
+                </div></Draggable>
     }
 }

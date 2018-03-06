@@ -88,8 +88,8 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
 
     render() {
         let relationshipId: string = this.props.appModel.activeRelationship ? this.props.appModel.activeRelationship.id : ""
-        return  <div className="editor-panel well" id="relationshipEditorPanel">
-                    <h4 className="pull-left" style={{marginBottom:20}}>Relationship [{relationshipId}]</h4>
+        return  <Draggable handle=".handle"><div className="editor-panel well" id="relationshipEditorPanel">
+                    <h4 className="pull-left handle" style={{marginBottom:20}}>Relationship [{relationshipId}]</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                         <tbody>
@@ -116,6 +116,6 @@ export default class RelationshipPanel extends React.Component<RelationshipPanel
                     <ReactBootstrap.Button bsStyle={'default'} key={"cancel"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "cancel")}>Cancel</ReactBootstrap.Button>
 
-                </div>;
+                </div></Draggable>;
     }
 }
