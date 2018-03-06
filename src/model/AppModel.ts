@@ -94,7 +94,7 @@ circle.node-base {
         }
 
         let newGraph: Graph = new Graph().initWithJson(newGraphJSON);
-        console.log(`newGraphJSON: `, newGraphJSON, newGraph);
+        // console.log(`newGraphJSON: `, newGraphJSON, newGraph);
         if (newGraph.name != '<filename>') {
             this.graphSet.addGraph(newGraph);
             this.saveGraph(newGraph);
@@ -116,7 +116,7 @@ circle.node-base {
     }
 
     initGraphWithName(name: string) {
-        console.log(`initGraphWithName: ${name}`);
+        // console.log(`initGraphWithName: ${name}`);
         this.graphSet.loadGraphWithName(name)
             .then((graph:Graph) => {
                 this.initGraph(graph);
@@ -129,7 +129,7 @@ circle.node-base {
         let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
         switch(graph.type) {
             case "file":
-                console.log("initGraph: type: file");
+                // console.log("initGraph: type: file");
                 if (graph.markup) {
                     this.graphModel = this.parseMarkup(graph.markup);
                 } else {
@@ -137,26 +137,26 @@ circle.node-base {
                 }
                 this.activeNode = this.graphModel.nodeList()[0];
                 this._activeRelationship = this.graphModel.relationshipList()[0];
-                console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
+                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                 this.activeGraph = graph;
                 this.applyActiveGraphCss();
-                console.log(`activeGraph: `, graph);
+                // console.log(`activeGraph: `, graph);
                 // this.emit('ready', this);
                 this.onUpdateActiveGraph();
                 break;
             case "neo4j":
                 this.neo4jController = new Neo4jController(graph.connection);
-                console.log(`graph: `, graph);
+                // console.log(`graph: `, graph);
                 graph.config = new Neo4jGraphConfig(graph.config);
                 this.neo4jController.getCypherAsD3(graph.connection.initialCypher)
                     .then(data => {
                         this.graphModel = ModelToD3.parseD3(data, null, {x: x, y: y});
                         this.activeNode = this.graphModel.nodeList()[0];
                         this._activeRelationship = this.graphModel.relationshipList()[0];
-                        console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
+                        // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                         this.activeGraph = graph;
                         this.applyActiveGraphCss();
-                        console.log(`activeGraph: `, graph);
+                        // console.log(`activeGraph: `, graph);
                         // this.emit('ready', this);
                         this.onUpdateActiveGraph();
                     });
@@ -184,7 +184,7 @@ circle.node-base {
         if (this.activeGraph.type == "neo4j") {
             this.neo4jController.updateNode(this._activeNode, oldLabel)
                 .then((response: any) => {
-                    console.log(response);
+                    // console.log(response);
                 })
                 .catch((error: any) => {
                     console.log(error);
@@ -218,7 +218,7 @@ circle.node-base {
         if (this.activeGraph.type == "neo4j") {
             this.neo4jController.updateRelationship(this._activeRelationship)
                 .then((response: any) => {
-                    console.log(response);
+                    // console.log(response);
                 })
                 .catch((error: any) => {
                     console.log(error);
@@ -237,7 +237,7 @@ circle.node-base {
             if (this.activeGraph.type == "neo4j") {
                 this.neo4jController.reverseRelationship(this._activeRelationship)
                     .then((result: any) => {
-                        console.log(result);
+                        // console.log(result);
                         this._activeRelationship.reverse();
                         this.onRedraw();
                     })
@@ -364,7 +364,7 @@ circle.node-base {
     }
 
     executeCypher(cypher: string): void {
-        console.log(`executeCypher: ${cypher}`);
+        // console.log(`executeCypher: ${cypher}`);
         let svgElement = document.getElementById('svgElement');
         // let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
         // let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
@@ -424,7 +424,7 @@ circle.node-base {
     }
 
     async onDragEnd() {
-        console.log(`AppModel: onDragEnd`, this._newNode, this._newRelationship);
+        // console.log(`AppModel: onDragEnd`, this._newNode, this._newRelationship);
         if ( this._newNode )
         {
             this._newNode.dragEnd();
@@ -435,13 +435,13 @@ circle.node-base {
                 if (this.activeGraph.type == "neo4j") {
                     // corresponding new node in neo4j
                     let nodeResult: any = await this.neo4jController.addNode(this._newNode);
-                    console.log(nodeResult);
+                    // console.log(nodeResult);
                 }
             }
             if (this.activeGraph.type == "neo4j") {
                 //create corresponding new relationship in neo4j
                 let relationshipResult: any = await this.neo4jController.addRelationship(this._newRelationship);
-                console.log(relationshipResult);
+                // console.log(relationshipResult);
             }
         }
 
@@ -526,7 +526,7 @@ circle.node-base {
         this._activeNode = this.graphModel.createNode();
         this._activeNode.x = x;
         this._activeNode.y = y;
-        console.log(`addLocalNode: `, this._activeNode);
+        // console.log(`addLocalNode: `, this._activeNode);
         return this._activeNode;
     }
 
@@ -536,7 +536,7 @@ circle.node-base {
         if (this.activeGraph.type == "neo4j") {
             this.neo4jController.addNode(this._activeNode)
                 .then((result: any) => {
-                    console.log(result);
+                    // console.log(result);
                     this.onRedraw();
                 })
                 .catch((error: any) => {
@@ -567,7 +567,7 @@ circle.node-base {
             if (this.activeGraph.type == "neo4j") {
                 this.neo4jController.deleteNode(this._activeNode)
                     .then((result: any) => {
-                        console.log(result);
+                        // console.log(result);
                         this.graphModel.deleteNode(this._activeNode);
                         this.onRedraw();
                     })
@@ -588,7 +588,7 @@ circle.node-base {
             if (this.activeGraph.type == "neo4j") {
                 this.neo4jController.deleteRelationship(this._activeRelationship)
                     .then((result: any) => {
-                        console.log(result);
+                        // console.log(result);
                         this.graphModel.deleteRelationship(this._activeRelationship);
                         this.onRedraw();
                     })
@@ -610,7 +610,7 @@ circle.node-base {
     }
 
     saveActiveGraph(): void {
-        console.log(`saveActiveGraph: `, this.activeGraph, this.graphModel);
+        // console.log(`saveActiveGraph: `, this.activeGraph, this.graphModel);
         this.saveGraph(this.activeGraph);
     }
 

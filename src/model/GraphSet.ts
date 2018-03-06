@@ -42,7 +42,7 @@ export default class GraphSet {
                         } else {
                             files.forEach((file: string) => {
                                 let filename: string = path.basename(file, '.json');
-                                    console.log(`loadGraphNames: adding: ${file} -> ${filename}`);
+                                    // console.log(`loadGraphNames: adding: ${file} -> ${filename}`);
                                     this.graphNames.set(filename, null);
                                     // let filepath: string = path.resolve(this.model.userDataPath, file);
                                     // this.load(filepath, (err: any, obj: any) => {

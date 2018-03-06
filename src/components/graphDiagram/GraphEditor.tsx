@@ -233,14 +233,14 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     editNode(__data__: any)
     {
-        console.log(this.props.appModel.activeNode);
+        // console.log(this.props.appModel.activeNode);
         this.showNodePanel();
         this.props.appModel.activeNode = __data__.model as Node;
     }
 
     editRelationship(__data__: any)
     {
-        console.log(this.props.appModel.activeRelationship);
+        // console.log(this.props.appModel.activeRelationship);
         this.showRelationshipPanel();
         this.props.appModel.activeRelationship = __data__.model as Relationship;
     }
@@ -265,8 +265,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
          .append("g")
 
       var svgElement = document.getElementById('svgElement');
-      console.log(`SVG:`);
-      console.log(svgContainer, svg_g, svgElement)
+    //   console.log(`SVG:`);
+    //   console.log(svgContainer, svg_g, svgElement)
       var x = svgElement.clientWidth / 2;
       var y = svgElement.clientHeight / 2;
 

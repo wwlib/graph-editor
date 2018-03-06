@@ -28,7 +28,7 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     }
 
     componentWillReceiveProps(nextProps: ModalFileDetailsProps) {
-        console.log(`ModalFileDetails: componentWillReceiveProps`, nextProps);
+        // console.log(`ModalFileDetails: componentWillReceiveProps`, nextProps);
         let connection: string = `{}`;
         let graphName: string = "";
         switch (nextProps.fileDetailsMode) {

@@ -75,7 +75,7 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
     }
 
     onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
+        // console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'exportCypher':
         		this.openModalExport("cypher");

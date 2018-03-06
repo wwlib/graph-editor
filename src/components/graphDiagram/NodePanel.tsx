@@ -22,7 +22,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
     }
 
     componentWillMount() {
-        console.log(`nodePanel: componentWillMount:`, this);
+        // console.log(`nodePanel: componentWillMount:`, this);
         this._oldLabel = null;
         this.setState({
             type: "",
@@ -66,7 +66,7 @@ export default class NodePanel extends React.Component<NodePanelProps, NodePanel
     }
 
     onButtonClicked(action: string): void {
-        console.log(`onButtonClicked: ${action}`);
+        // console.log(`onButtonClicked: ${action}`);
         switch (action) {
             case 'save':
                 this.save();
