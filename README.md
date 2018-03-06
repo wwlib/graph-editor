@@ -1,4 +1,4 @@
-## graph-editor-react
+## graph-editor
 
 ### About
 graph-editor is an electron/react app for editing live neo4j databases.
