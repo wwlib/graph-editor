@@ -37,6 +37,7 @@ body {
 }
 
 #toolsPanel {
+    z-index: 200;
     top: 10px;
 }
 

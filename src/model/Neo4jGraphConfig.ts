@@ -6,21 +6,30 @@ export type SavedCypher = {
 
 export default class Neo4jGraphConfig {
 
-    public initialCypher: string;
+    // public initialCypher: string;
     public savedCyphers: Map<number, SavedCypher>;
     public nextCypherIndex: number = 0;
 
     constructor(json: any) {
-        this.initWithJson(json);
+        if (json) {
+            this.initWithJson(json);
+        } else {
+            // this.initialCypher = "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100";
+            this.savedCyphers = new Map<number, SavedCypher>();
+            this.nextCypherIndex = 0;
+        }
+
     }
 
     initWithJson(json: any) {
-        this.initialCypher = json.initialCypher;
+        // this.initialCypher = json.initialCypher;
         this.savedCyphers = new Map<number, SavedCypher>();
         this.nextCypherIndex = 0;
-        json.savedCyphers.forEach((savedCypher: SavedCypher) => {
-            this.addSavedCypher(savedCypher.name, savedCypher.cypher);
-        });
+        if (json.savedCyphers) {
+            json.savedCyphers.forEach((savedCypher: SavedCypher) => {
+                this.addSavedCypher(savedCypher.name, savedCypher.cypher);
+            });
+        }
     }
 
     savedCyphersToArray(): any[] {
@@ -29,7 +38,7 @@ export default class Neo4jGraphConfig {
 
     toJSON(): any {
         let json: any = {};
-        json.initialCypher = this.initialCypher;
+        // json.initialCypher = this.initialCypher;
         json.savedCyphers = this.savedCyphersToArray();
         return json;
     }
