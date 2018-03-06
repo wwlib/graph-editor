@@ -81,16 +81,16 @@ export default class AppModel extends EventEmitter {
             name: options.graphName || '<filename>',
             connection: options.connection || {type: "file"},
             config: options.config || {},
-            scale: 1.0,
-            css: `
+            scale: options.scale || 1.0,
+            css: options.css || `
 circle.node-base {
   fill: #FF756E;
   stroke: #E06760;
   stroke-width: 3px;
 }
 `,
-            d3Graph: null,
-            markup: null
+            d3Graph: options.d3Graph,
+            markup: options.markup
         }
 
         let newGraph: Graph = new Graph().initWithJson(newGraphJSON);
@@ -100,6 +100,8 @@ circle.node-base {
             this.saveGraph(newGraph);
         }
         if (newGraph.type == "neo4j") {
+            this.initGraph(newGraph);
+        } else if (newGraph.type == "file" && (options.markup || options.d3Graph) ) {
             this.initGraph(newGraph);
         } else {
             this.graphModel = new Model();

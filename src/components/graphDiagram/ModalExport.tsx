@@ -22,7 +22,7 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
     }
 
     componentWillReceiveProps(nextProps: ModalExportProps) {
-        // console.log(`ModalExport: componentWillReceiveProps`, nextProps);
+        console.log(`ModalExport: componentWillReceiveProps`, nextProps);
         if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
             let exportedData: string = "DATA";
             switch(nextProps.exportMode) {
@@ -64,7 +64,8 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
     }
 
     save() {
-        // console.log(`ModalExport: save: ${this.props.exportMode}`);
+        console.log(`ModalExport: save: ${this.props.exportMode}`);
+        let options: any = {};
         switch(this.props.exportMode) {
             case "cypher":
                 let cypher = this.state.exportedData;
@@ -75,10 +76,16 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                 shell.openExternal(url);
                 break;
             case "markup":
-
+                options = {
+                    markup: this.state.exportedData
+                }
+                this.props.appModel.newGraph(options);
                 break;
             case "d3":
-
+                options = {
+                    d3Graph: JSON.parse(this.state.exportedData)
+                }
+                this.props.appModel.newGraph(options);
                 break;
             case "svg":
 
