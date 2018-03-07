@@ -43,17 +43,21 @@ body {
 
 #cypherPanel {
     top: 100px;
-    width: 420px;
 }
 
 .item {
-  background: linear-gradient(#fff, #eee);
+  background: white; /* linear-gradient(#fff, #eee); */
   line-height: 30px;
   padding: 0 10px;
+  border: 1px solid #f9f9f9;
 }
 
 .even {
-  background: linear-gradient(#ddd, #ccc);
+  background: white; /* #f9f9f9; */ /* linear-gradient(#ddd, #ccc); */
+}
+
+.selected {
+    border: 1px solid lightblue;
 }
 
 #nodeEditorPanel {

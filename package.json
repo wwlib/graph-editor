@@ -23,7 +23,7 @@
     "d3": "^4.12.0",
     "ensureDir": "^1.0.6",
     "find-root": "^1.0.0",
-    "graph-diagram": "0.0.8",
+    "graph-diagram": "0.0.9",
     "isuuid": "^0.1.0",
     "jsonfile": "^2.4.0",
     "neo4j-driver": "^1.5.1",
