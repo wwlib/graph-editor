@@ -27,9 +27,10 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     }
 
     componentWillMount() {
+        let item: SavedCypher = this.props.appModel.getSavedCypherList()[0];
         this.setState(prevState => ({
-            activeCypher: {name: "", cypher: ""},
-            selectedCyperIndex: -1,
+            activeCypher: item || { name: '<name>', cypher: '<cypher>'},
+            selectedCyperIndex: 0,
             status: ""
         }));
 
@@ -47,7 +48,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
 
     onCypherExecuted(data: any): void {
         this.setState({
-            status: JSON.stringify(data)
+            status: 'OK' //JSON.stringify(data)
         });
     }
 
@@ -87,37 +88,45 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
 
     onButtonClicked(action: string): void {
         // console.log(`onButtonClicked: ${action}`);
-        switch (action) {
-            case 'run':
-                this.executeCypher(this.state.activeCypher);
-                break;
-            case 'save':
-                this.saveSelectedCypher(this.state.activeCypher);
-                break;
-            case 'delete':
-                this.deleteSlectedCypher(this.state.activeCypher.index);
+        if (this.props.appModel.activeGraph.type == "neo4j") {
+            switch (action) {
+                case 'run':
+                    this.executeCypher(this.state.activeCypher);
                     break;
+                case 'new':
+                    this.newSavedCypher();
+                    break;
+                case 'delete':
+                    this.deleteSlectedCypher(this.state.activeCypher.index);
+                        break;
+            }
         }
     }
 
     onItemClicked(index: number): void {
         // console.log(`onButtonClicked: ${index}`);
         let item: SavedCypher = this.props.appModel.getSavedCypherList()[index];
-        this.setState({
-            activeCypher: item,
-            selectedCyperIndex: index
-        });
+        if (item) {
+            this.setState({
+                activeCypher: item,
+                selectedCyperIndex: index
+            });
+        }
     }
 
     executeCypher(activeCypher: SavedCypher): void {
-        this.props.appModel.executeCypher(activeCypher.cypher);
+        // this.props.appModel.executeCypher(activeCypher.cypher);
+        this.props.appModel.createGraphModelWithCypherQuery(activeCypher.cypher);
     }
 
-    saveSelectedCypher(savedCypher: SavedCypher): void {
-        let newIndex: number = this.props.appModel.saveSlectedCypher(savedCypher);
-        this.setState({
-            activeCypher: this.props.appModel.getSavedCypherList()[newIndex],
-            selectedCyperIndex: newIndex
+    newSavedCypher(): void {
+        let newIndex: number = this.props.appModel.newSavedCypher();
+        console.log(`newSavedCypher: ${newIndex}`);
+        this.setState(prevState => {
+            return {
+                activeCypher: this.props.appModel.getSavedCypherList()[newIndex],
+                selectedCyperIndex: newIndex
+            }
         });
     }
 
@@ -134,9 +143,9 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
       let itemName: string = item.name;
       let itemCypher: string = item.cypher;
       let count: number = this._savedCypherListLength;
-      let classname: string = 'item'; // 'item' + (index % 2 ? '' : ' even')
+      let classname: string = 'item' + (index % 2 ? '' : ' even')
       if (index == this.state.selectedCyperIndex) {
-          classname = 'item even';
+          classname += ' selected';
       }
     //   console.log(`renderItem ${index} ${key} ${count} ${item.name} ${item.cypher}`)
       return  <div key={key} className={classname} onClick={this.onItemClicked.bind(this, index)}>
@@ -158,19 +167,19 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                             <tr>
                             <td>name:</td>
                             <td>
-                            <input name="cypherName" value={this.state.activeCypher.name} onChange={this.handleInputChange.bind(this)} style={{width: 300}} />
+                            <input name="cypherName" value={this.state.activeCypher.name} onChange={this.handleInputChange.bind(this)} style={{width: 400}} />
                             </td>
                             </tr>
                             <tr>
                             <td>cypher:</td>
                             <td>
-                            <input name="cypher" value={this.state.activeCypher.cypher} onChange={this.handleInputChange.bind(this)} style={{width: 300}} />
+                            <textarea name="cypher" value={this.state.activeCypher.cypher} onChange={this.handleInputChange.bind(this)} style={{width: 400, height: 50}} />
                             </td>
                             </tr>
                             <tr>
                             <td>saved:</td>
                             <td>
-                            <div style={{overflow: 'auto', maxHeight: 100}}>
+                            <div style={{overflow: 'auto', height: 200, maxHeight: 200}}>
                                 <ReactList
                                   itemRenderer={this.renderItem.bind(this)}
                                   length={this._savedCypherListLength}
@@ -182,15 +191,15 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                             <tr>
                             <td>status:</td>
                             <td>
-                            <textarea name="cypherStatus" value={this.state.status} onChange={this.handleInputChange.bind(this)} style={{width: 300, height: 100}} />
+                            <textarea name="cypherStatus" value={this.state.status} onChange={this.handleInputChange.bind(this)} style={{width: 400, height: 100}} />
                             </td>
                             </tr>
                         </tbody>
                     </ReactBootstrap.Table>
                     <ReactBootstrap.Button bsStyle={'default'} key={"run"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "run")}>Run</ReactBootstrap.Button>
-                    <ReactBootstrap.Button bsStyle={'default'} key={"save"} style = {{width: 80}}
-                        onClick={this.onButtonClicked.bind(this, "save")}>Save</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={'default'} key={"new"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "new")}>New</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"delete"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "delete")}>Delete</ReactBootstrap.Button>
 

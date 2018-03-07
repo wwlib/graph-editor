@@ -394,7 +394,11 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                 this.startSimulation(20);
                 break;
             case 'cypherPanel':
-                this.setState(prevState => ({showCypherPanel: !prevState.showCypherPanel}));
+                if (this.props.appModel.activeGraph.type == "neo4j") {
+                    this.setState(prevState => ({showCypherPanel: !prevState.showCypherPanel}));
+                } else {
+                    this.setState(prevState => ({showCypherPanel: false}));
+                }
                 break;
         }
     }

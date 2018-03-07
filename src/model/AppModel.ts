@@ -125,45 +125,50 @@ circle.node-base {
             });
     }
 
-    initGraph(graph: Graph): void {
+    getSvgSize(): any {
         let svgElement = document.getElementById('svgElement');
         let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
         let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
+        return { x: x, y: y };
+    }
+
+    initGraph(graph: Graph): void {
         switch(graph.type) {
             case "file":
-                // console.log("initGraph: type: file");
                 if (graph.markup) {
                     this.graphModel = this.parseMarkup(graph.markup);
                 } else {
-                    this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, {x: x, y: y});
+                    this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, this.getSvgSize());
                 }
                 this.activeNode = this.graphModel.nodeList()[0];
                 this._activeRelationship = this.graphModel.relationshipList()[0];
-                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
                 this.activeGraph = graph;
                 this.applyActiveGraphCss();
-                // console.log(`activeGraph: `, graph);
-                // this.emit('ready', this);
                 this.onUpdateActiveGraph();
                 break;
             case "neo4j":
                 this.neo4jController = new Neo4jController(graph.connection);
-                // console.log(`graph: `, graph);
                 graph.config = new Neo4jGraphConfig(graph.config);
-                this.neo4jController.getCypherAsD3(graph.connection.initialCypher)
-                    .then(data => {
-                        this.graphModel = ModelToD3.parseD3(data, null, {x: x, y: y});
-                        this.activeNode = this.graphModel.nodeList()[0];
-                        this._activeRelationship = this.graphModel.relationshipList()[0];
-                        // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
-                        this.activeGraph = graph;
-                        this.applyActiveGraphCss();
-                        // console.log(`activeGraph: `, graph);
-                        // this.emit('ready', this);
-                        this.onUpdateActiveGraph();
-                    });
+                this.createGraphModelWithCypherQuery(graph.connection.initialCypher, graph);
                 break;
         }
+    }
+
+    createGraphModelWithCypherQuery(cypher: string, graph?: Graph): void {
+        graph = graph || this.activeGraph;
+        this.neo4jController.getCypherAsD3(cypher)
+            .then(data => {
+                this.graphModel = ModelToD3.parseD3(data, null, this.getSvgSize());
+                this.activeNode = this.graphModel.nodeList()[0];
+                this._activeRelationship = this.graphModel.relationshipList()[0];
+                this.activeGraph = graph;
+                this.applyActiveGraphCss();
+                this.onUpdateActiveGraph();
+                this.emit('onCypherExecuted', data);
+            })
+            .catch((error: any) => {
+                this.emit('onCypherExecutionError', error);
+            })
     }
 
     saveActiveNode(label: string, propertiesText: any, oldLabel?: string): void {
@@ -346,10 +351,11 @@ circle.node-base {
         return css_pp;
     }
 
+    //// neo4j
+
     getSavedCypherList(): any[] {
         // console.log(`getSavedCypherList: `, this.activeGraph);
         let result: any[] = [];
-        let neo4jGraphConfig: Neo4jGraphConfig;
         if (this.activeGraph.type == "neo4j") {
             let neo4jGraphConfig: Neo4jGraphConfig = this.activeGraph.config;
             result = neo4jGraphConfig.savedCyphersToArray();
@@ -357,38 +363,49 @@ circle.node-base {
         return result;
     }
 
-    saveSlectedCypher(savedCypher: SavedCypher): number {
-        return 0
+    newSavedCypher(): number {
+        let result: number = 0;
+        if (this.activeGraph.type == "neo4j") {
+            let neo4jGraphConfig: Neo4jGraphConfig = this.activeGraph.config;
+            result = neo4jGraphConfig.addSavedCypher('<cypher name>', '<cypher>');
+        }
+        return result;
     }
 
     deleteSavedCypher(savedCypher: SavedCypher): number {
+        if (this.activeGraph.type == "neo4j") {
+            let neo4jGraphConfig: Neo4jGraphConfig = this.activeGraph.config;
+            neo4jGraphConfig.deleteSavedCypherWithIndex(savedCypher.index);
+        }
         return 0
     }
 
-    executeCypher(cypher: string): void {
-        // console.log(`executeCypher: ${cypher}`);
-        let svgElement = document.getElementById('svgElement');
-        // let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
-        // let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
-        this.neo4jController.getCypherAsD3(cypher)
-            .then(data => {
-                // this.graphData = data;
-                // this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
-                // this.activeNode = this.graphModel.nodeList()[0];
-                // this._activeRelationship = this.graphModel.relationshipList()[0];
-                // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
-                // console.log(`activeGraph: `, this.activeGraph);
-                this.emit('onCypherExecuted', data);
-            })
-            .catch((error: any) => {
-                this.emit('onCypherExecutionError', error);
-            })
+    // executeCypher(cypher: string): void {
+    //     // console.log(`executeCypher: ${cypher}`);
+    //     let svgElement = document.getElementById('svgElement');
+    //     // let width: number = svgElement ? svgElement.clientWidth / 2 : 1280;
+    //     // let height: number = svgElement ? svgElement.clientHeight / 2 : 700;
+    //     this.neo4jController.getCypherAsD3(cypher)
+    //         .then(data => {
+    //             // this.graphData = data;
+    //             // this.graphModel = ModelToD3.parseD3(this.graphData, null, {x: width, y: height});
+    //             // this.activeNode = this.graphModel.nodeList()[0];
+    //             // this._activeRelationship = this.graphModel.relationshipList()[0];
+    //             // console.log(`graphModel: `, this.graphModel, this.graphModel.nodeList, this.activeNode, this._activeRelationship);
+    //             // console.log(`activeGraph: `, this.activeGraph);
+    //             this.emit('onCypherExecuted', data);
+    //         })
+    //         .catch((error: any) => {
+    //             this.emit('onCypherExecutionError', error);
+    //         })
+    //
+    // }
+    //
+    // executeCypherWithIndex(index: number): void {
+    //
+    // }
 
-    }
-
-    executeCypherWithIndex(index: number): void {
-
-    }
+    ////
 
     set activeNode(node: Node) {
         this._activeNode = node;

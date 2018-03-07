@@ -1,5 +1,5 @@
 export type SavedCypher = {
-    index?: number;
+    index: number;
     name: string;
     cypher: string;
 }
@@ -30,6 +30,9 @@ export default class Neo4jGraphConfig {
                 this.addSavedCypher(savedCypher.name, savedCypher.cypher);
             });
         }
+        if (this.savedCyphers.size == 0) {
+            this.newSavedCypher();
+        }
     }
 
     savedCyphersToArray(): any[] {
@@ -46,7 +49,16 @@ export default class Neo4jGraphConfig {
     addSavedCypher(name: string, cypher: string): number {
         let savedCypherIndex: number = this.nextCypherIndex++;
         this.savedCyphers.set(savedCypherIndex, {index: savedCypherIndex, name: name, cypher: cypher});
-        return this.savedCyphers.size;
+        return this.savedCyphers.size - 1;
+    }
+
+    newSavedCypher(): number {
+        return this.addSavedCypher('<cypher name>', '<cypher>');
+    }
+
+    saveCypher(savedCypher: SavedCypher): void {
+        let savedCypherIndex: number = savedCypher.index || this.nextCypherIndex++;
+        this.savedCyphers.set(savedCypherIndex, {index: savedCypherIndex, name: savedCypher.name, cypher: savedCypher.cypher});
     }
 
     deleteSavedCypherWithIndex(index: number): number {
