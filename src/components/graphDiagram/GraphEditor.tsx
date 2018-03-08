@@ -308,12 +308,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             let node: any = {};
             node.layoutNode = layoutNode;
             node.r = layoutNode.radius.insideRadius * 2;
-            console.log(layoutNode);
             nodeDictionary[layoutNode.model.id] = nodeIndex++;
             nodes.push(node);
         });
-
-        console.log(nodeDictionary);
 
         layoutRelationships.forEach((layoutRelationship: LayoutRelationship) => {
             let link: any = {};
@@ -335,13 +332,20 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
+        // https://bl.ocks.org/wnghdcjfe/c2b04ee8430afa32ce76596daa4d8123
         simulation = d3Force.forceSimulation()
-            .force("link", d3Force.forceLink().id(function(d: any) { return d.index }))
-            .force("collide",d3Force.forceCollide( function(d: any){return d.r * 1.25 }).iterations(16) )
-            .force("charge", d3Force.forceManyBody())
+            .force("link", d3Force.forceLink().id(function(d: any) { return d.index })) //.distance((d:any) => {return  d.source.r + d.target.r + 45}).strength(1))
+            .force("collide",d3Force.forceCollide( function(d: any){return d.r + 25 }))
+            .force("charge", d3Force.forceManyBody()) //.strength(-5000).distanceMin(500).distanceMax(2000))
             .force("center", d3Force.forceCenter(svgElement.clientWidth / 2, svgElement.clientHeight / 2))
-            .force("y", d3Force.forceY(0))
-            .force("x", d3Force.forceX(0));
+            .force("y", d3Force.forceY(0.001))
+            .force("x", d3Force.forceX(0.001))
+
+        // from neo4j-browser
+        // linkDistance = 45
+        // d3force = d3.layout.force()
+        // .linkDistance((relationship) -> relationship.source.radius + relationship.target.radius + linkDistance)
+        // .charge(-1000)
 
         simData = thiz.generateSimData(thiz.diagram);
         console.log(simData);
@@ -349,6 +353,16 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
             .data(simData.nodes)
+
+        svg_g.select( "g.layer.node_properties" )
+            .attr( "display", "none");
+        svg_g.select( "g.layer.relationships" )
+            .attr( "display", "none");
+        svg_g.select( "g.layer.relationship_properties" )
+            .attr( "display", "none");
+        svg_g.select( "g.layer.nodes" ).selectAll( "g.caption")
+            .attr( "display", "none");
+
 
         // simLinks = svg_g.select( "g.layer.nodes" ).append("g")
         //     .attr("class", "links")
@@ -393,6 +407,15 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             node.layoutNode.model.x = node.x;
             node.layoutNode.model.y = node.y;
         });
+        svg_g.select( "g.layer.node_properties" )
+            .attr( "display", "block");
+        svg_g.select( "g.layer.relationships" )
+            .attr( "display", "block");
+        svg_g.select( "g.layer.relationship_properties" )
+            .attr( "display", "block");
+        svg_g.select( "g.layer.nodes" ).selectAll( "g.caption")
+            .attr( "display", "block");
+
         thiz.draw();
     }
 
