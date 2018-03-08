@@ -301,19 +301,25 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
         let nodes: any[] = [];
         let links: any[] = [];
+        let nodeDictionary: any = {};
+        let nodeIndex: number = 0;
 
         layoutNodes.forEach((layoutNode: LayoutNode) => {
             let node: any = {};
             node.layoutNode = layoutNode;
             node.r = layoutNode.radius.insideRadius * 2;
+            console.log(layoutNode);
+            nodeDictionary[layoutNode.model.id] = nodeIndex++;
             nodes.push(node);
         });
+
+        console.log(nodeDictionary);
 
         layoutRelationships.forEach((layoutRelationship: LayoutRelationship) => {
             let link: any = {};
             link.layoutRelationship = layoutRelationship;
-            link.source = layoutRelationship.start.model.index;
-            link.target = layoutRelationship.end.model.index;
+            link.source = nodeDictionary[layoutRelationship.start.model.id];
+            link.target = nodeDictionary[layoutRelationship.end.model.id];
             links.push(link);
         });
 
@@ -324,23 +330,32 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     startSimulation(ticks?: number): void {
+        simulationTickCount = 0;
         simulationMaxTicks = ticks || 20;
         // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
         simulation = d3Force.forceSimulation()
             .force("link", d3Force.forceLink().id(function(d: any) { return d.index }))
-            .force("collide",d3Force.forceCollide( function(d: any){return d.r }).iterations(16) )
+            .force("collide",d3Force.forceCollide( function(d: any){return d.r * 1.25 }).iterations(16) )
             .force("charge", d3Force.forceManyBody())
             .force("center", d3Force.forceCenter(svgElement.clientWidth / 2, svgElement.clientHeight / 2))
             .force("y", d3Force.forceY(0))
             .force("x", d3Force.forceX(0));
 
         simData = thiz.generateSimData(thiz.diagram);
+        console.log(simData);
 
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
             .data(simData.nodes)
+
+        // simLinks = svg_g.select( "g.layer.nodes" ).append("g")
+        //     .attr("class", "links")
+        //     .selectAll("line")
+        //     .data(simData.links)
+        //     .enter().append("line")
+        //     .attr("stroke-width", function(d: any) { return 1; });
 
         simulation
             .nodes(simData.nodes)
@@ -352,6 +367,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     ticked() {
+
+        // simLinks
+        //     .attr("x1", function(d: any) { return d.source.x; })
+        //     .attr("y1", function(d: any) { return d.source.y; })
+        //     .attr("x2", function(d: any) { return d.target.x; })
+        //     .attr("y2", function(d: any) { return d.target.y; });
+
         simNodes
             .attr("cx", function(d: any) { return d.x; })
             .attr("cy", function(d: any) { return d.y; });
@@ -391,7 +413,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                 this.draw();
                 break;
             case 'forceLayout':
-                this.startSimulation(20);
+                this.startSimulation(100);
                 break;
             case 'cypherPanel':
                 if (this.props.appModel.activeGraph.type == "neo4j") {

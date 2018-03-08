@@ -160,7 +160,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
         // console.log(`render: `, this._savedCypherList);
 
         return  <Draggable handle=".handle"><div className="editor-panel well" id="cypherPanel">
-                    <h4 className="pull-left handle" style={{marginBottom:20}}>Cypher [{this.state.selectedCyperIndex}]</h4>
+                    <h4 className="pull-left handle" style={{marginBottom:20}}>Saved Cyphers</h4>
                     <div className="clearfix"></div>
                     <ReactBootstrap.Table striped bordered condensed hover style = {{width: 400}}>
                             <tbody>
