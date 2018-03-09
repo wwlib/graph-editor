@@ -29,7 +29,7 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     componentWillMount() {
         let item: SavedCypher = this.props.appModel.getSavedCypherList()[0];
         this.setState(prevState => ({
-            activeCypher: item || { name: '<name>', cypher: '<cypher>'},
+            activeCypher: item || { name: '<name>', cypher: '<cypher>'} as SavedCypher,
             selectedCyperIndex: 0,
             status: ""
         }));
