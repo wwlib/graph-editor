@@ -2,6 +2,7 @@ const neo4j = require('neo4j-driver').v1;
 // const config = require('../../data/neo4j-db-config.json');
 import { GraphConnection } from '../model/Graph';
 import {
+    Model,
     Node,
     Relationship
 } from 'graph-diagram';
@@ -122,7 +123,12 @@ export default class Neo4jController {
                         d3: D3Helper.data(response, neo4j)
                     }
                     if (result.d3.links && result.d3.links[0]) {
-                        relationship.id = result.d3.links[0].id;
+                        let relationshipData: any = result.d3.links[0];
+                        let model: Model = relationship.model;
+                        let updatedRelationship: Relationship = model.reassignRelationshipId(relationship, relationshipData.id);
+                        if (!updatedRelationship) {
+                            console.log(`Relationship id could not be reassigned.`, response, result)
+                        }
                     } else {
                         console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }
@@ -154,7 +160,12 @@ export default class Neo4jController {
                         d3: D3Helper.data(response, neo4j)
                     }
                     if (result.d3.links && result.d3.links[0]) {
-                        relationship.id = result.d3.links[0].id;
+                        let relationshipData: any = result.d3.links[0];
+                        let model: Model = relationship.model;
+                        let updatedRelationship: Relationship = model.reassignRelationshipId(relationship, relationshipData.id);
+                        if (!updatedRelationship) {
+                            console.log(`Relationship id could not be reassigned.`, response, result)
+                        }
                     } else {
                         console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }
@@ -176,7 +187,12 @@ export default class Neo4jController {
                         d3: D3Helper.data(response, neo4j)
                     }
                     if (result.d3.nodes && result.d3.nodes[0]) {
-                        node.id = result.d3.nodes[0].id;
+                        let nodeData: any = result.d3.nodes[0];
+                        let model: Model = node.model;
+                        let updatedNode: Node = model.reassignNodeId(node, nodeData.id);
+                        if (!updatedNode) {
+                            console.log(`Node id could not be reassigned.`, response, result)
+                        }
                     } else {
                         console.log(`Could not set neo4j id of new node!`, response, result);
                     }
@@ -220,7 +236,12 @@ RETURN r`;
                         d3: D3Helper.data(response, neo4j)
                     }
                     if (result.d3.links && result.d3.links[0]) {
-                        relationship.id = result.d3.links[0].id;
+                        let relationshipData: any = result.d3.links[0];
+                        let model: Model = relationship.model;
+                        let updatedRelationship: Relationship = model.reassignRelationshipId(relationship, relationshipData.id);
+                        if (!updatedRelationship) {
+                            console.log(`Relationship id could not be reassigned.`, response, result)
+                        }
                     } else {
                         console.log(`Could not set neo4j id of new relationship!`, response, result)
                     }

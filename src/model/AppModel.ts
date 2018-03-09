@@ -223,9 +223,12 @@ circle.node-base {
         });
 
         if (this.activeGraph.type == "neo4j") {
+            if (!this._activeRelationship._relationshipType) {
+                this._activeRelationship._relationshipType = "RELATED_TO";
+            }
             this.neo4jController.updateRelationship(this._activeRelationship)
                 .then((response: any) => {
-                    // console.log(response);
+                    // console.log(response, this.graphModel);
                 })
                 .catch((error: any) => {
                     console.log(error);
@@ -568,8 +571,36 @@ circle.node-base {
         return this._activeNode;
     }
 
+    // addNode(x?: number, y?: number): Promise<Node> {
+    //     return new Promise((resolve, reject) => {
+    //         this._activeNode = this.addLocalNode(x, y);
+    //         //this.save( formatMarkup() );
+    //         if (this.activeGraph.type == "neo4j") {
+    //             this.neo4jController.addNode(this._activeNode)
+    //                 .then((result: any) => {
+    //                     // console.log(result);
+    //                     this.onRedraw();
+    //                     resolve(this._activeNode);
+    //                 })
+    //                 .catch((error: any) => {
+    //                     console.log(error);
+    //                     this.deleteActiveNode();
+    //                     this.onRedraw();
+    //                     reject();
+    //                 })
+    //         } else {
+    //             this.onRedraw();
+    //             resolve(this._activeNode);
+    //         }
+    //     });
+    // }
+
+
     addLocalRelationship(start: Node, end: Node): Relationship {
         let relationship: Relationship = this.graphModel.createRelationship(start, end);
+        if (this.activeGraph.type == "neo4j" && !relationship._relationshipType) {
+            relationship._relationshipType = "RELATED_TO";
+        }
         return relationship;
     }
 

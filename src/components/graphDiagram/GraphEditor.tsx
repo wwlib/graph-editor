@@ -328,7 +328,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     startSimulation(ticks?: number): void {
         simulationTickCount = 0;
-        simulationMaxTicks = ticks || 20;
+        simulationMaxTicks = ticks || 100;
         // console.log(`startSimulation:`);
         var svgElement = document.getElementById('svgElement')
 
@@ -348,7 +348,6 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         // .charge(-1000)
 
         simData = thiz.generateSimData(thiz.diagram);
-        console.log(simData);
 
         simNodes = svg_g.select( "g.layer.nodes" )
             .selectAll("circle")
@@ -504,8 +503,8 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                         onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="forceLayoutButton" bsStyle={'default'} key={"forceLayout"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "forceLayout")}>Force</ReactBootstrap.Button>
-                    <ReactBootstrap.Button id="cypherPanelButton" bsStyle={'default'} key={"cypherPanel"} style = {{width: 80}}
-                        onClick={this.onButtonClicked.bind(this, "cypherPanel")}>Cypher</ReactBootstrap.Button>
+                    <ReactBootstrap.Button id="cypherPanelButton" bsStyle={'default'} key={"cypherPanel"}
+                        onClick={this.onButtonClicked.bind(this, "cypherPanel")}>SavedCyphers</ReactBootstrap.Button>
                     <input id="internalScale" type="range" min="0.1" max="5" value={this.state.scale} step="0.01" onChange={this.changeInternalScale.bind(this)}/>
                 </div>
                 <ToolsPanel appModel={this.props.appModel} />

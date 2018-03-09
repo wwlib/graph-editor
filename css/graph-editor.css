@@ -63,11 +63,13 @@ body {
 #nodeEditorPanel {
     top: 400px;
     width: 420px;
+    left: 10px;
 }
 
 #relationshipEditorPanel {
     top: 400px;
     width: 420px;
+    left: 10px;
 }
 
 .modal-export {
