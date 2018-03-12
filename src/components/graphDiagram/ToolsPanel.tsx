@@ -92,6 +92,9 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
             case 'exportCSS':
         		this.openModalExport("css");
         		break;
+            case 'exportDot':
+        		this.openModalExport("dot");
+        		break;
             case 'details':
                 this.openModalFileDetails("details");
                 break;
@@ -183,6 +186,8 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                       onClick={this.onButtonClicked.bind(this, "exportSVG")}>SVG</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"exportCSS"} style = {{width: 80}}
                       onClick={this.onButtonClicked.bind(this, "exportCSS")}>CSS</ReactBootstrap.Button>
+                  <ReactBootstrap.Button bsStyle={'default'} key={"exportDot"} style = {{width: 80}}
+                    onClick={this.onButtonClicked.bind(this, "exportDot")}>Dot</ReactBootstrap.Button>
 
                     <div>
                         <label className="input-label">Open:</label>

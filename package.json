@@ -24,6 +24,7 @@
     "ensureDir": "^1.0.6",
     "find-root": "^1.0.0",
     "graph-diagram": "0.0.10",
+    "graphlib-dot": "^0.6.2",
     "isuuid": "^0.1.0",
     "jsonfile": "^2.4.0",
     "neo4j-driver": "^1.5.1",

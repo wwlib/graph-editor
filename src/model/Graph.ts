@@ -21,7 +21,8 @@ export type GraphData = {
     css: string;
     config: GraphConfig | Neo4jGraphConfig;
     d3Graph: d3Types.d3Graph;
-    markup?: string
+    markup?: string;
+    dot?: string
 }
 
 export default class Graph {
@@ -35,6 +36,7 @@ export default class Graph {
     public config: GraphConfig;
     public d3Graph: d3Types.d3Graph;
     public markup: string;
+    public dot: string;
 
     constructor(connection?: any) {
         this.connection = connection;
@@ -53,6 +55,7 @@ export default class Graph {
       this.css = json.css;
       this.d3Graph = json.d3Graph;
       this.markup = json.markup;
+      this.dot = json.dot;
 
       return this;
     }
@@ -67,6 +70,7 @@ export default class Graph {
         json.config = this.config;
         json.d3Graph =  this.d3Graph;
         json.markup = this.markup;
+        json.dot = this.dot;
 
         return json;
     }

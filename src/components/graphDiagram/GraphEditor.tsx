@@ -192,6 +192,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
     }
 
     onUpdateActiveGraph(): void {
+        // console.log(`onUpdateActiveGraph`);
         this.initGraphEditor();
     }
 

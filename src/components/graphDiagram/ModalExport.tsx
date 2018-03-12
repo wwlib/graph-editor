@@ -41,6 +41,9 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                 case "css":
                     exportedData = this.props.appModel.getCSS();
                     break;
+                case "dot":
+                    exportedData = '';
+                    break;
             }
             this.setState(prevState => ({
                 showModalState: nextProps.showModalProp,
@@ -64,7 +67,7 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
     }
 
     save() {
-        console.log(`ModalExport: save: ${this.props.exportMode}`);
+        // console.log(`ModalExport: save: ${this.props.exportMode}`);
         let options: any = {};
         switch(this.props.exportMode) {
             case "cypher":
@@ -92,6 +95,12 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                 break;
             case "css":
                 this.props.appModel.applyActiveGraphCss(this.state.exportedData);
+                break;
+            case "dot":
+                options = {
+                    dot: this.state.exportedData
+                }
+                this.props.appModel.newGraph(options);
                 break;
         }
 

@@ -22,6 +22,7 @@ import {
 } from 'graph-diagram';
 
 import Neo4jGraphConfig, { SavedCypher } from './Neo4jGraphConfig';
+import ModelToDot from './ModelToDot';
 
 export default class AppModel extends EventEmitter {
 
@@ -90,7 +91,8 @@ circle.node-base {
 }
 `,
             d3Graph: options.d3Graph,
-            markup: options.markup
+            markup: options.markup,
+            dot: options.dot
         }
 
         let newGraph: Graph = new Graph().initWithJson(newGraphJSON);
@@ -101,7 +103,7 @@ circle.node-base {
         }
         if (newGraph.type == "neo4j") {
             this.initGraph(newGraph);
-        } else if (newGraph.type == "file" && (options.markup || options.d3Graph) ) {
+        } else if (newGraph.type == "file" && (options.markup || options.d3Graph || options.dot) ) {
             this.initGraph(newGraph);
         } else {
             this.graphModel = new Model();
@@ -125,7 +127,7 @@ circle.node-base {
             });
     }
 
-    getSvgSize(): any {
+    getSvgOrigin(): any {
         let svgElement = document.getElementById('svgElement');
         let x: number = svgElement ? svgElement.clientWidth / 2 : 1280 / 2;
         let y: number = svgElement ? svgElement.clientHeight / 2 : 700 / 2;
@@ -135,12 +137,14 @@ circle.node-base {
     initGraph(graph: Graph): void {
         switch(graph.type) {
             case "file":
-                if (graph.markup) {
+                if (graph.d3Graph) {
+                    this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, this.getSvgOrigin());
+                } else if (graph.markup) {
                     this.graphModel = this.parseMarkup(graph.markup);
-                } else {
-                    this.graphModel = ModelToD3.parseD3(graph.d3Graph, null, this.getSvgSize());
+                } else if (graph.dot) {
+                    this.graphModel = ModelToDot.parseDot(graph.dot, null, this.getSvgOrigin());
                 }
-                this.activeNode = this.graphModel.nodeList()[0];
+                this._activeNode = this.graphModel.nodeList()[0];
                 this._activeRelationship = this.graphModel.relationshipList()[0];
                 this.activeGraph = graph;
                 this.applyActiveGraphCss();
@@ -158,8 +162,8 @@ circle.node-base {
         graph = graph || this.activeGraph;
         this.neo4jController.getCypherAsD3(cypher)
             .then(data => {
-                this.graphModel = ModelToD3.parseD3(data, null, this.getSvgSize());
-                this.activeNode = this.graphModel.nodeList()[0];
+                this.graphModel = ModelToD3.parseD3(data, null, this.getSvgOrigin());
+                this._activeNode = this.graphModel.nodeList()[0];
                 this._activeRelationship = this.graphModel.relationshipList()[0];
                 this.activeGraph = graph;
                 this.applyActiveGraphCss();
@@ -167,6 +171,7 @@ circle.node-base {
                 this.emit('onCypherExecuted', data);
             })
             .catch((error: any) => {
+                console.log(`createGraphModelWithCypherQuery: error:`, error);
                 this.emit('onCypherExecutionError', error);
             })
     }
@@ -527,7 +532,7 @@ circle.node-base {
     }
 
     getActiveNodeLabel(): string {
-        return this.activeNode.caption;
+        return this._activeNode.caption;
     }
 
     getActiveNodePropertiesAsText(): string {
