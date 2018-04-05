@@ -1,6 +1,5 @@
 .DS_Store
-node_modules
-*.log
-hide
-data/user
 dist/
+node_modules/
+thumbs.db
+hide

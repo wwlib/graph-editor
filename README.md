@@ -1,19 +1,30 @@
-## graph-editor
+# graph-editor
 
 ### About
-graph-editor is an electron/react app for editing live neo4j databases.
+graph-editor is an electron-webpack/react app for designing graphs and editing live neo4j databases.
 
-### install
-`npm install`
+### yarn
+The use of the [yarn](https://yarnpkg.com/) package manager is **strongly** recommended, as opposed to using `npm`.
 
-### build
-`npm run build`
+```bash
+yarn
+```
 
-### electron
-npm install -g electron
+### Development Scripts
 
-### run
-`electron .`
+```bash
+# run application in development mode
+yarn dev
+
+# compile source code and create webpack output
+yarn compile
+
+# `yarn compile` & create build with electron-builder
+yarn dist
+
+# `yarn compile` & create unpacked build with electron-builder
+yarn dist:dir
+```
 
 ### Usage
 - Note: This is a very early prototype intended for experimentation.
@@ -31,7 +42,7 @@ npm install -g electron
   "url": "bolt://localhost:7687",
   "user": "neo4j",
   "password": "neo4j",
-  "initialCypher": "MATCH (n)-[r]-(p), (q) return n,r,p, q limit 100"
+  "initialCypher": "MATCH (n)-[r]-(p) return n,r,p limit 100"
 }
 ```
 
