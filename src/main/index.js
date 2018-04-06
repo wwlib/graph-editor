@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
 
@@ -9,7 +9,53 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow
 
+let menuTemplate = [
+    {
+        label: 'Electron',
+        submenu: [
+            {
+                label: 'Quit',
+                accelerator: 'Command+Q',
+                click: function () {
+                    app.quit();
+                }
+            },
+        ]
+    },
+    {
+    label: "Edit",
+    submenu: [
+        { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+        { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+        { type: "separator" },
+        { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
+        { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
+        { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
+        { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+    ]},
+    {
+        label: 'View',
+        submenu: [
+            {
+                label: 'Reload',
+                accelerator: 'Command+R',
+                click: function () {
+                    BrowserWindow.getFocusedWindow().reloadIgnoringCache();
+                }
+            },
+            {
+                label: 'Toggle DevTools',
+                accelerator: 'Alt+Command+I',
+                click: function () {
+                    BrowserWindow.getFocusedWindow().toggleDevTools();
+                }
+            }
+        ]
+    }
+];
+
 function createMainWindow() {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
   const window = new BrowserWindow({width: 1280, height: 720, resizable: true, title: 'Graph Editor'})
 
   if (isDevelopment) {
