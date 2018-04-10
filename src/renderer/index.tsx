@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom';
 import Application from './components/Application';
 import AppModel from './model/AppModel';
 
+import 'font-awesome/css/font-awesome.min.css';
 import '../../css/bootstrap.min.css';
 import '../../css/bootstrap-theme.min';
 import '../../css/graph-diagram.css';

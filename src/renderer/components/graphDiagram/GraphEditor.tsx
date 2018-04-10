@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import FontAwesome from 'react-fontawesome';
 
 import {
     select,
@@ -173,7 +174,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
         let showCypherPanel: boolean = false;
         if (this.props.appModel.activeGraph && this.props.appModel.activeGraph.type == "neo4j") {
-            // showCypherPanel = true;
+            showCypherPanel = true;
             this.startSimulation();
         }
         this.setState(prevState => ({
@@ -507,7 +508,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                 <div id="svgContainer"></div>
                 <div id="graphEditorButtons" className="well">
                     <ReactBootstrap.Button id="addNodeButton" bsStyle={'default'} key={"addNode"} style = {{width: 80}}
-                        onClick={this.onButtonClicked.bind(this, "addNode")}><i className="icon-plus"></i> Node</ReactBootstrap.Button>
+                        onClick={this.onButtonClicked.bind(this, "addNode")}><FontAwesome name='plus'/> Node</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="bubblesButton" bsStyle={'default'} key={"bubbles"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "bubbles")}>Bubbles</ReactBootstrap.Button>
                     <ReactBootstrap.Button id="forceLayoutButton" bsStyle={'default'} key={"forceLayout"} style = {{width: 80}}

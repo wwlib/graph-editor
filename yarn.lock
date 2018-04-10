@@ -260,6 +260,12 @@
     "@types/node" "*"
     "@types/react" "*"
 
+"@types/react-fontawesome@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@types/react-fontawesome/-/react-fontawesome-1.6.2.tgz#ca021892bd68e50e817b12f0d083a6086093da11"
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-list@^0.8.3":
   version "0.8.3"
   resolved "https://registry.yarnpkg.com/@types/react-list/-/react-list-0.8.3.tgz#25b16a0b8084085ab8dcd22fabc2d3aa14af992b"
@@ -5492,7 +5498,7 @@ prop-types-extra@^1.0.1:
   dependencies:
     warning "^3.0.0"
 
-prop-types@15, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@^15.6.0:
+prop-types@15, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.8, prop-types@^15.6.0:
   version "15.6.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.1.tgz#36644453564255ddda391191fb3a125cbdf654ca"
   dependencies:
@@ -5657,6 +5663,12 @@ react-draggable@^3.0.5:
   dependencies:
     classnames "^2.2.5"
     prop-types "^15.6.0"
+
+react-fontawesome@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/react-fontawesome/-/react-fontawesome-1.6.1.tgz#eddce17e7dc731aa09fd4a186688a61793a16c5c"
+  dependencies:
+    prop-types "^15.5.6"
 
 react-hot-loader@^4.0.0-beta.13:
   version "4.0.0"
