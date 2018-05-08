@@ -268,18 +268,20 @@ circle.node-base {
 
     reverseActiveRelationship(): void {
         if (this._activeRelationship && this.activeGraph) {
-            if (this.activeGraph.type == "neo4j" && this.neo4jController) {
-                this.neo4jController.reverseRelationship(this._activeRelationship)
-                    .then((result: any) => {
-                        // console.log(result);
-                        if (this._activeRelationship) {
-                            this._activeRelationship.reverse();
-                            this.onRedraw();
-                        }
-                    })
-                    .catch((error: any) => {
-                        console.log(error);
-                    })
+            if (this.activeGraph.type == "neo4j") {
+                if (this.neo4jController) {
+                    this.neo4jController.reverseRelationship(this._activeRelationship)
+                        .then((result: any) => {
+                            // console.log(result);
+                            if (this._activeRelationship) {
+                                this._activeRelationship.reverse();
+                                this.onRedraw();
+                            }
+                        })
+                        .catch((error: any) => {
+                            console.log(error);
+                        })
+                }
             } else {
                 this._activeRelationship.reverse();
                 this.onRedraw();
@@ -635,19 +637,21 @@ circle.node-base {
 
     deleteActiveNode()
     {
-        if (this._activeNode && this.activeGraph && this.neo4jController) {
+        if (this._activeNode && this.activeGraph) {
             if (this.activeGraph.type == "neo4j") {
-                this.neo4jController.deleteNode(this._activeNode)
-                    .then((result: any) => {
-                        // console.log(result);
-                        if (this.graphModel && this._activeNode) {
-                            this.graphModel.deleteNode(this._activeNode);
-                            this.onRedraw();
-                        }
-                    })
-                    .catch((error: any) => {
-                        console.log(error);
-                    })
+                if (this.neo4jController) {
+                    this.neo4jController.deleteNode(this._activeNode)
+                        .then((result: any) => {
+                            // console.log(result);
+                            if (this.graphModel && this._activeNode) {
+                                this.graphModel.deleteNode(this._activeNode);
+                                this.onRedraw();
+                            }
+                        })
+                        .catch((error: any) => {
+                            console.log(error);
+                        })
+                }
             } else {
                 if (this.graphModel) {
                     this.graphModel.deleteNode(this._activeNode);
@@ -660,19 +664,21 @@ circle.node-base {
 
     deleteActiveRelationship()
     {
-        if (this._activeRelationship && this.activeGraph && this.neo4jController) {
+        if (this._activeRelationship && this.activeGraph) {
             if (this.activeGraph.type == "neo4j") {
-                this.neo4jController.deleteRelationship(this._activeRelationship)
-                    .then((result: any) => {
-                        // console.log(result);
-                        if (this.graphModel && this._activeRelationship) {
-                            this.graphModel.deleteRelationship(this._activeRelationship);
-                            this.onRedraw();
-                        }
-                    })
-                    .catch((error: any) => {
-                        console.log(error);
-                    })
+                if (this.neo4jController) {
+                    this.neo4jController.deleteRelationship(this._activeRelationship)
+                        .then((result: any) => {
+                            // console.log(result);
+                            if (this.graphModel && this._activeRelationship) {
+                                this.graphModel.deleteRelationship(this._activeRelationship);
+                                this.onRedraw();
+                            }
+                        })
+                        .catch((error: any) => {
+                            console.log(error);
+                        })
+                }
             } else {
                 if (this.graphModel) {
                     this.graphModel.deleteRelationship(this._activeRelationship);
