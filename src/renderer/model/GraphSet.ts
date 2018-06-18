@@ -100,6 +100,22 @@ export default class GraphSet {
         });
     }
 
+    loadGraphWithPath(filepath: string):  Promise<Graph> {
+        return new Promise<Graph>((resolve, reject) => {
+            let resolvedFilepath: string =  path.resolve(filepath);
+            // console.log(`resolvedFilepath: `, resolvedFilepath)
+            this.load(resolvedFilepath, (err: any, data: any) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    let graph: Graph = new Graph();
+                    graph.initWithJson(data);
+                    resolve(graph)
+                }
+            });
+        });
+    }
+
     loadGraphWithName(name: string):  Promise<Graph> {
         return new Promise<Graph>((resolve, reject) => {
             let filepath: string =  this.generateFilepathWithName(name);

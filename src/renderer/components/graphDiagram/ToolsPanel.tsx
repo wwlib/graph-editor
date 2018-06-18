@@ -2,8 +2,11 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 
 import AppModel from '../../model/AppModel';
+import Graph from '../../model/Graph';
 import ModalExport from './ModalExport';
 import ModalFileDetails from './ModalFileDetails';
+
+const {dialog} = require('electron').remote;
 
 export interface ToolsPanelProps { appModel: AppModel }
 export interface ToolsPanelState {
@@ -72,6 +75,9 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
     onButtonClicked(action: string): void {
         // console.log(`onButtonClicked: ${action}`);
         switch (action) {
+            case 'exportGraph':
+        		this.openModalExport("graph");
+                break;
             case 'exportCypher':
         		this.openModalExport("cypher");
         		break;
@@ -99,6 +105,9 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
             case 'newNeo4j':
                 this.openModalFileDetails("newNeo4j");
                 break;
+            case 'import':
+               this.importGraphFile();
+               break;
             case 'save':
                 this.save();
         		break;
@@ -114,20 +123,59 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
     }
 
     openModalExport(exportMode: string) {
-        this.setState({ showModal: true, exportMode: exportMode });
+        this.setState(prevState => ({ showModal: true, exportMode: exportMode }));
     }
 
     onCloseModalExport() {
-        this.setState({ showModal: false });
+        // console.log(`ToolsPanel: onCloseModalExport:`);
+        this.setState(prevState => ({ showModal: false }));
     }
 
     openModalFileDetails(mode: string = "") {
         this.setState(prevState => ({ showFileDetailsModal: true, fileDetailsMode: mode }));
     }
 
-    onCloseModalFileDetails(graphName?: string) {
-        if (graphName) {
-            this.setState(prevState => ({ showFileDetailsModal: false, graphName: graphName }));
+    importGraphFile(): void {
+        dialog.showOpenDialog((fileNames: string[]) => {
+            // fileNames is an array that contains all the selected
+            if(fileNames === undefined){
+                console.log("No file selected");
+                return;
+            }
+            if (fileNames[0] && this.props.appModel) {
+                this.props.appModel.initGraphWithPath(fileNames[0])
+                    .then((graph: Graph) => {
+                        if (this.props.appModel && this.props.appModel.graphSet) {
+                            this.props.appModel.graphSet.addGraph(graph);
+                            this.props.appModel.graphSet.saveGraph(graph);
+                            this.setState(prevState => ({ graphName: graph.name }));
+                        }
+
+                    })
+                    .catch((err: any) => {
+                        console.log(err);
+                    })
+            }
+        });
+    }
+
+    onCloseModalFileDetails(options?: any) {
+        // console.log(`ToolsPanel: onCloseModalFileDetails:`, options);
+        if (options) {
+            if (options.fileDetailsMode == "newFile" || options.fileDetailsMode == "newNeo4j") { //save
+                this.props.appModel.newBlankGraph(options);
+                this.setState(prevState => ({ showFileDetailsModal: false, graphName: options.name }));
+            } else { //saveAs
+                if (this.props.appModel.activeGraph && this.props.appModel.graphSet) {
+                    this.props.appModel.activeGraph.name = options.name;
+                    // this.props.appModel.activeGraph.connection = options.connection;
+                    this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph); //TODO if name hass changed, the graph should be copied
+                    this.props.appModel.graphSet.saveGraph(this.props.appModel.activeGraph);
+                    this.setState(prevState => ({ showFileDetailsModal: false, graphName: options.name }));
+                } else {
+                    this.setState(prevState => ({ showFileDetailsModal: false}));
+                }
+            }
         } else {
             this.setState(prevState => ({ showFileDetailsModal: false}));
         }
@@ -173,6 +221,8 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                   <div className="tools form-inline">
                     <ModalExport showModalProp={this.state.showModal} onClose={this.onCloseModalExport.bind(this)} appModel={this.props.appModel} exportMode={this.state.exportMode} />
                     <ModalFileDetails showModalProp={this.state.showFileDetailsModal} onClose={this.onCloseModalFileDetails.bind(this)} appModel={this.props.appModel} fileDetailsMode={this.state.fileDetailsMode} />
+                    <ReactBootstrap.Button bsStyle={'default'} key={"exportGraph"} style = {{width: 80}}
+                      onClick={this.onButtonClicked.bind(this, "exportGraph")}>Graph</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"exportCypher"} style = {{width: 80}}
                       onClick={this.onButtonClicked.bind(this, "exportCypher")}>Cypher</ReactBootstrap.Button>
                     <ReactBootstrap.Button bsStyle={'default'} key={"exportMarkup"} style = {{width: 80}}
@@ -198,6 +248,8 @@ export default class ToolsPanel extends React.Component<ToolsPanelProps, ToolsPa
                             onClick={this.onButtonClicked.bind(this, "newFile")}>New File</ReactBootstrap.Button>
                         <ReactBootstrap.Button bsStyle={'default'} key={"newNeo4j"} style = {{width: 100}}
                             onClick={this.onButtonClicked.bind(this, "newNeo4j")}>New Neo4j</ReactBootstrap.Button>
+                        <ReactBootstrap.Button bsStyle={'default'} key={"import"} style = {{width: 80}}
+                            onClick={this.onButtonClicked.bind(this, "import")}>Import</ReactBootstrap.Button>
                     </div>
                   </div>
                 </div>;

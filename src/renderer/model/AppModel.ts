@@ -58,7 +58,7 @@ export default class AppModel extends EventEmitter {
                 .then(() => {
                 //    this.initGraphWithName('example-file'); //this.graphSet.getGraphNames()[1]);
                    this.emit('ready', this);
-                   this.newGraph();
+                   this.newBlankGraph();
                 });
         });
     }
@@ -72,6 +72,41 @@ export default class AppModel extends EventEmitter {
         return model;
     }
 
+    newBlankGraph(options?: any): void {
+        let svgElement = document.getElementById('svgElement');
+        let x: number = svgElement ? svgElement.clientWidth / 2 : this.appDimensions.width / 2;
+        let y: number = svgElement ? svgElement.clientHeight / 2 : this.appDimensions.height / 2;
+        // let options: any = {name: name};
+        let newGraph: Graph = new Graph().initWithJson(options);
+        this.graphModel = new Model();
+        let node: Node = this.graphModel.createNode();
+        node.x = x;
+        node.y = y;
+        node.caption = 'New Node';
+        this._activeNode = this.graphModel.nodeList()[0];
+        this._activeRelationship = undefined;
+        this.activeGraph = newGraph;
+        this.applyActiveGraphCss();
+        this.onUpdateActiveGraph();
+
+        if (newGraph.name && newGraph.name != '<filename>' && this.graphSet) {
+            this.graphSet.addGraph(newGraph);
+            this.initGraph(newGraph);
+            this.saveGraph(newGraph);
+        }
+    }
+
+    newGraphWithOptions(options: any): void {
+        // console.log(`newGraphWithOptions: `, options);
+        let newGraph: Graph = new Graph().initWithJson(options);
+        if (this.graphSet) {
+            this.graphSet.addGraph(newGraph);
+            this.initGraph(newGraph);
+            this.saveGraph(newGraph);
+        }
+    }
+
+/*
     newGraph(options?: any): void {
         options = options || {};
         let svgElement = document.getElementById('svgElement');
@@ -117,7 +152,7 @@ circle.node-base {
             this.onUpdateActiveGraph();
         }
     }
-
+*/
     initGraphWithName(name: string) {
         // console.log(`initGraphWithName: ${name}`);
         if (this.graphSet) {
@@ -127,6 +162,22 @@ circle.node-base {
                 });
         }
 
+    }
+
+    initGraphWithPath(path: string): Promise<Graph> {
+        return new Promise<Graph>((resolve, reject) => {
+            // console.log(`initGraphWithPath: ${path}`);
+            if (this.graphSet) {
+                this.graphSet.loadGraphWithPath(path)
+                    .then((graph:Graph) => {
+                        this.initGraph(graph);
+                        resolve(graph);
+                    })
+                    .catch((err: any) => {
+                        reject(err);
+                    });
+            }
+        });
     }
 
     getSvgOrigin(): any {
@@ -163,6 +214,7 @@ circle.node-base {
     }
 
     createGraphModelWithCypherQuery(cypher: string, graph?: Graph): void {
+        console.log(`createGraphModelWithCypherQuery: cypher: ${cypher}`, graph);
         graph = graph || this.activeGraph;
         if(this.neo4jController) {
             this.neo4jController.getCypherAsD3(cypher)
@@ -183,7 +235,7 @@ circle.node-base {
     }
 
     saveActiveNode(label: string, propertiesText: any, oldLabel?: string): void {
-        console.log(`AppModel: saveActiveNode: `, label, propertiesText, oldLabel, this.activeGraph);
+        // console.log(`AppModel: saveActiveNode: `, label, propertiesText, oldLabel, this.activeGraph);
         if (this._activeNode) {
             let labelBackup: string = this._activeNode.caption;
             let propertiesBackup: any = this._activeNode.properties.toJSON();

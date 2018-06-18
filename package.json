@@ -8,7 +8,7 @@
     "dist": "yarn compile && electron-builder",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
-  "author": "Andrew Rapo <andrew@worthwhilegames.org> (http://worthwhilegames.org)",
+  "author": "Andrew Rapo <andrew@wwlib.org> (https://wwlib.github.io/)",
   "dependencies": {
     "@types/react-fontawesome": "^1.6.2",
     "async": "^2.1.5",
@@ -20,6 +20,7 @@
     "graphlib-dot": "^0.6.2",
     "jsonfile": "^2.4.0",
     "neo4j-driver": "^1.5.1",
+    "osenv": "^0.1.5",
     "pretty-data": "^0.40.0",
     "react": "^16.2.0",
     "react-bootstrap": "^0.32.1",

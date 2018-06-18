@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 
 import AppModel from '../../model/AppModel';
+import Graph from '../../model/Graph';
 
 const shell = require('electron').shell;
 
@@ -26,6 +27,12 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
         if (nextProps.showModalProp && nextProps.appModel && nextProps.appModel.activeGraph) {
             let exportedData: string = "DATA";
             switch(nextProps.exportMode) {
+                case "graph":
+                    let activeGraph: Graph | undefined = this.props.appModel.activeGraph;
+                    if (activeGraph) {
+                        exportedData = JSON.stringify(activeGraph.toJSON(), null, 2);
+                    }
+                    break;
                 case "cypher":
                     exportedData = this.props.appModel.getCypher();
                     break;
@@ -70,6 +77,14 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
         // console.log(`ModalExport: save: ${this.props.exportMode}`);
         let options: any = {};
         switch(this.props.exportMode) {
+            case "graph":
+                try {
+                    options = JSON.parse(this.state.exportedData);
+                    this.props.appModel.newGraphWithOptions(options);
+                } catch (e) {
+                    console.log(`ModalExport: save: error:`, e);
+                }
+                break;
             case "cypher":
                 let cypher = this.state.exportedData;
                 cypher = cypher.replace(/\n  /g," ");
@@ -82,13 +97,13 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                 options = {
                     markup: this.state.exportedData
                 }
-                this.props.appModel.newGraph(options);
+                this.props.appModel.newGraphWithOptions(options);
                 break;
             case "d3":
                 options = {
                     d3Graph: JSON.parse(this.state.exportedData)
                 }
-                this.props.appModel.newGraph(options);
+                this.props.appModel.newGraphWithOptions(options);
                 break;
             case "svg":
 
@@ -100,7 +115,7 @@ export default class ModalExport extends React.Component<ModalExportProps, Modal
                 options = {
                     dot: this.state.exportedData
                 }
-                this.props.appModel.newGraph(options);
+                this.props.appModel.newGraphWithOptions(options);
                 break;
         }
 
