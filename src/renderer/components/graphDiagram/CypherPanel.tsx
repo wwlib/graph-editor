@@ -16,6 +16,8 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
     private _onCypherExecutedHandler: any = this.onCypherExecuted.bind(this);
     private _onCypherExecutionErrorHandler: any = this.onCypherExecutionErrorHandler.bind(this);
 
+    private _itemClickedPrevTime: number = 0;
+
     constructor(props: any) {
         super(props);
     }
@@ -105,6 +107,12 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                 activeCypher: item,
                 selectedCyperIndex: index
             });
+        }
+        let currentTime: number = new Date().getTime();
+        let elapsedTime: number = currentTime - this._itemClickedPrevTime
+        this._itemClickedPrevTime = currentTime;
+        if (elapsedTime < 200) {
+            this.executeCypher(item);
         }
     }
 
