@@ -42,9 +42,10 @@ export default class Graph {
         this.connection = connection;
     }
 
-    initWithJson(json: any): Graph {
-      this.name = json.name;
-      this.connection = json.connection;
+    initWithJson(json?: any): Graph {
+        json = json || {};
+      this.name = json.name || '<filename>';
+      this.connection = json.connection || {type: "file"};
       if (this.type == 'neo4j') {
           this.config = new Neo4jGraphConfig(json.config);
           this.connection.initialCypher = this.connection.initialCypher || Graph.DEFAULT_CYPHER;
@@ -52,7 +53,13 @@ export default class Graph {
           this.config = json.config;
       }
       this.scale = json.scale || 1.0;
-      this.css = json.css;
+      this.css = json.css || `
+circle.node-base {
+fill: #FF756E;
+stroke: #E06760;
+stroke-width: 3px;
+}
+`;
       this.d3Graph = json.d3Graph;
       this.markup = json.markup;
       this.dot = json.dot;

@@ -62,9 +62,10 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     componentDidUpdate(nextProps: ModalFileDetailsProps, nextState: ModalFileDetailsState): void {
     }
 
-    close(graphName?: string) {
+    close(options?: any) {
+        // console.log(`ModalFileDetails: close:`, options);
         this.setState(prevState => {
-            this.props.onClose(graphName);
+            this.props.onClose(options);
             return { showModalState: false, graphName: '', connection: ''};
         });
     }
@@ -74,20 +75,12 @@ export default class ModalFileDetails extends React.Component<ModalFileDetailsPr
     }
 
     save() {
-        if (this.props.fileDetailsMode == "newFile" || this.props.fileDetailsMode == "newNeo4j") {
-            let options: any = {};
-            options.fileDetailsMode = this.props.fileDetailsMode;
-            options.graphName = this.state.graphName;
-            options.connection = JSON.parse(this.state.connection);
-            this.props.appModel.newGraph(options);
-        } else {
-            if (this.props.appModel.activeGraph && this.props.appModel.graphSet) {
-                this.props.appModel.activeGraph.name = this.state.graphName;
-                this.props.appModel.activeGraph.connection = JSON.parse(this.state.connection);
-                this.props.appModel.graphSet.addGraph(this.props.appModel.activeGraph); //TODO if name hass changed, the graph should be copied
-            }
-        }
-        this.close(this.state.graphName);
+        let options: any = {};
+        options.fileDetailsMode = this.props.fileDetailsMode;
+        options.name = this.state.graphName;
+        options.connection = JSON.parse(this.state.connection);
+        // console.log(`ModalFileDetails: save:`, options);
+        this.close(options);
     }
 
     onButtonClicked(action: string): void {
