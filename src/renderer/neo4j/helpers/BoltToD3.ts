@@ -24,6 +24,7 @@ export default class BoltToD3 {
         // this.nodeDict = {};
         this.nodes = new Map<number, any>();
         this.relationships = new Map<number, any>();
+        // console.log(boltResponse);
         for (i = 0; i < boltResponse.records.length; i++) {
             // console.log(`Parsing node ${i}`);
             this.parseFields(boltResponse.records[i]._fields);
@@ -116,10 +117,20 @@ export default class BoltToD3 {
         let neoIdDict: any = {};
         // first we parse the nodes
         for (let i: number = 0; i < fields.length; i++) {
-            let field = fields[i];
+            let fieldCandidate = fields[i];
             // let id = this.getId(field);
-            let neoId: any = (this.isNode(field) ? 'node' : 'link') + field.identity.toString();
-            neoIdDict[neoId] = this.isNode(field) ? this.makeNode(field) : field;
+            let fieldArray: any[] = [];
+            if (Array.isArray(fieldCandidate)) {
+                fieldCandidate.forEach((field: any) => {
+                    fieldArray.push(field);
+                })
+            } else {
+                fieldArray.push(fieldCandidate);
+            }
+            fieldArray.forEach((field: any) => {
+                let neoId: any = (this.isNode(field) ? 'node' : 'link') + field.identity.toString();
+                neoIdDict[neoId] = this.isNode(field) ? this.makeNode(field) : field;
+            })
         }
         // console.log(neoIdDict);
         // now we have valid node IDs and a dictionary, we can parse the links
