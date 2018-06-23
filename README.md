@@ -27,7 +27,7 @@ yarn dist:dir
 ```
 
 ### Usage
-- Note: This is a very early prototype intended for experimentation.
+- Note: This is an early prototype intended for experimentation.
 - Use the New File button to create a new local graph File
 - Double-click nodes and relationships to edit them
 

@@ -1,0 +1,87 @@
+<html>
+<head>
+    <title>graph-editor</title>
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <style>
+      html {
+          display: table;
+          margin: auto;
+      }
+
+      body {
+          display: table-cell;
+          vertical-align: middle;
+      }
+    </style>
+</head>
+<body>
+
+    <h1 id="grapheditor">graph-editor</h1>
+
+    <h3 id="repo">Repo</h3>
+
+    <p><a href="https://github.com/wwlib/graph-editor">https://github.com/wwlib/graph-editor</a></p>
+
+
+    <h3 id="about">About</h3>
+
+    <p>graph-editor is an electron-webpack/react app for designing graphs and editing live neo4j databases.</p>
+
+    <h3 id="yarn">yarn</h3>
+
+    <p>The use of the <a href="https://yarnpkg.com/">yarn</a> package manager is <strong>strongly</strong> recommended, as opposed to using <code>npm</code>.</p>
+
+    <pre><code class="bash language-bash">yarn
+    </code></pre>
+
+    <h3 id="developmentscripts">Development Scripts</h3>
+
+    <pre><code class="bash language-bash"># run application in development mode
+    yarn dev
+
+    # compile source code and create webpack output
+    yarn compile
+
+    # `yarn compile` &amp; create build with electron-builder
+    yarn dist
+
+    # `yarn compile` &amp; create unpacked build with electron-builder
+    yarn dist:dir
+    </code></pre>
+
+    <h3 id="usage">Usage</h3>
+
+    <ul>
+    <li>Note: This is an early prototype intended for experimentation.</li>
+
+    <li>Use the New File button to create a new local graph File</li>
+
+    <li>Double-click nodes and relationships to edit them</li>
+    </ul>
+
+    <p><img src="./img/GraphEditor.png" alt="graph editor" /></p>
+
+    <p>-Use the New Neo4j button to create a connection to a live neo4j database</p>
+
+    <ul>
+    <li>set the connection url, user, password, etc.</li>
+    </ul>
+
+    <pre><code>"connection": {
+      "type": "neo4j",
+      "url": "bolt://localhost:7687",
+      "user": "neo4j",
+      "password": "neo4j",
+      "initialCypher": "MATCH (n)-[r]-(p) return n,r,p limit 100"
+    }
+    </code></pre>
+
+    <p><img src="./img/GraphEditor_NewNeo4j.png" alt="new neo4j" /></p>
+
+    <ul>
+    <li>Changes in the editor are reflected in the neo4j browser</li>
+    </ul>
+
+    <p><img src="./img/GraphEditor_LiveNeo4j.png" alt="live neo4j" /></p>
+</body>
+</html>
