@@ -4,6 +4,8 @@
 
 [https://wwlib.github.io/graph-editor](https://wwlib.github.io/graph-editor)
 
+(see also: [https://github.com/wwlib/neo4j-knowledge-graph](https://github.com/wwlib/neo4j-knowledge-graph))
+
 ### About
 graph-editor is an electron-webpack/react app for designing graphs and editing live neo4j databases.
 
