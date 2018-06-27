@@ -3,6 +3,8 @@
 ### About
 graph-editor is an electron-webpack/react app for designing graphs and editing live neo4j databases.
 
+Note: Graph Editor is uses the Graph Diagram library ([https://wwlib.github.io/graph-diagram/](https://wwlib.github.io/graph-diagram/)) which is a TypeScript port of a graph-editing project called Arrows, originally created by Alistair Jones at Neo4j ([http://www.apcjones.com/arrows/](http://www.apcjones.com/arrows/), [https://github.com/apcj/arrows](https://github.com/apcj/arrows)).
+
 ### yarn
 The use of the [yarn](https://yarnpkg.com/) package manager is **strongly** recommended, as opposed to using `npm`.
 
