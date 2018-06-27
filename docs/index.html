@@ -23,6 +23,9 @@
 
     <p><a href="https://github.com/wwlib/graph-editor">https://github.com/wwlib/graph-editor</a></p>
 
+    <h3 id="docs">Docs</h3>
+
+    <p><a href="https://wwlib.github.io/graph-editor/graph-editor-intro.html">https://wwlib.github.io/graph-editor/graph-editor-intro.html</a></p>
 
     <h3 id="about">About</h3>
 
@@ -60,7 +63,7 @@
     <li>Double-click nodes and relationships to edit them</li>
     </ul>
 
-    <p><img src="./img/GraphEditor.png" alt="graph editor" /></p>
+    <p><img src="./img/graph-editor-animals.png" alt="graph editor" /></p>
 
     <p>-Use the New Neo4j button to create a connection to a live neo4j database</p>
 
@@ -72,17 +75,18 @@
       "type": "neo4j",
       "url": "bolt://localhost:7687",
       "user": "neo4j",
-      "password": "neo4j",
+      "password": "&lt;PASSWORD&gt;",
       "initialCypher": "MATCH (n)-[r]-(p) return n,r,p limit 100"
     }
     </code></pre>
 
-    <p><img src="./img/GraphEditor_NewNeo4j.png" alt="new neo4j" /></p>
+    <p><img src="./img/graph-editor-neo4j-new.png" alt="new neo4j" /></p>
 
     <ul>
     <li>Changes in the editor are reflected in the neo4j browser</li>
     </ul>
 
-    <p><img src="./img/GraphEditor_LiveNeo4j.png" alt="live neo4j" /></p>
+    <p><img src="./img/neo4j-kg-tutorial-neo4j-browser.png" alt="live neo4j" /></p>
+
 </body>
 </html>

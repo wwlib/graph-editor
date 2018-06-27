@@ -1,0 +1,158 @@
+<html>
+<head>
+    <title>graph-editor - Intro</title>
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <style>
+      html {
+          display: table;
+          margin: auto;
+      }
+
+      body {
+          display: table-cell;
+          vertical-align: middle;
+          max-width: 800px;
+      }
+    </style>
+</head>
+<body>
+
+    <h2 id="grapheditor">graph-editor</h2>
+
+    <p><em>Subject</em>: Graph Editor <br />
+    <em>Language</em>: TypeScript (node), React, Electron, webpack <br />
+    <em>Repo</em>: git@github.com:wwlib/graph-editor.git <br />
+    <em>Related</em>: Neo4j Knowledge Graph Example: <a href="https://wwlib.github.io/neo4j-knowledge-graph/">https://wwlib.github.io/neo4j-knowledge-graph/</a></p>
+
+    <p><a href="https://wwlib.github.io/graph-editor/">https://wwlib.github.io/graph-editor/</a></p>
+
+    <p><a href="https://github.com/wwlib/graph-editor">https://github.com/wwlib/graph-editor</a></p>
+
+    <p><a href="https://wwlib.github.io/">https://wwlib.github.io</a></p>
+
+    <p>Graph Editor is a tool for viewing and interactively editing Neo4j graphs. It can also be used to create, edit and share simple graph layouts using a json file format.</p>
+
+    <p>Note: Graph Editor is uses the Graph Diagram library (<a href="https://wwlib.github.io/graph-diagram/">https://wwlib.github.io/graph-diagram/</a>) which is a TypeScript port of a graph-editing project called Arrows, originally created by Alistair Jones at Neo4j (<a href="www.apcjones.com/arrows/"></a>).</p>
+
+<!--
+    <h3 id="overview">Overview</h3>
+
+    <p>Overview video (YouTube): <a href="https://www.youtube.com/embed/pEps_xaUWVo">https://www.youtube.com/embed/YFRiWiZJPkU</a></p>
+-->
+
+    <h3 id="gettingstarted">Getting Started</h3>
+
+    <h4 id="build">build</h4>
+
+    <pre><code>
+    git clone git@github.com:wwlib/graph-editor.git
+    cd graph-editor
+    yarn
+    yarn dev
+    </code></pre>
+
+    <h4 id="newgraph">New Graph</h4>
+
+    <p>When Graph Editor starts it presents a new empty graph. The most common actions include:</p>
+
+    <ul>
+    <li>New node: click the + Node button (top left) or drag a new node by clicking on the perimeter of an existing node and dragging.</li>
+
+    <li>Link two nodes: Click on the perimeter of the source node and drag onto the target node</li>
+
+    <li>Edit a node/link: double-click on the node/link
+
+
+    <ul>
+    <li>The node/link type will be displayed on the node/link</li>
+
+    <li>For nodes that have a name property, the name will also be displayed on the node</li></ul>
+    </li>
+    </ul>
+
+    <h4 id="saveagraph">Save a graph</h4>
+
+    <ul>
+    <li>Click the Save button in the file panel (top right)
+
+
+    <ul>
+    <li>If prompted, enter a file name in the file details dialog</li>
+
+    <li>Click the Save button in the file panel (top right)</li></ul>
+    </li>
+    </ul>
+
+    <h4 id="importagraphjsonfile">Import a graph json file</h4>
+
+    <ul>
+    <li>Click on the Import button in the file panel (top right)
+
+
+    <ul>
+    <li>Navigate to a valid Graph Editor json file</li>
+
+    <li>Click the Save button in the file panel (top right)</li></ul>
+    </li>
+    </ul>
+
+    <h4 id="exportagraph">Export a graph</h4>
+
+    <ul>
+    <li>(manual, for now). Click on the Graph button in the file panel (top right)
+
+
+    <ul>
+    <li>Copy the contents of the Export dialog into a new file (using a text editor)</li>
+
+    <li>Save the file with a json extension. i.e. my-graph.json</li></ul>
+    </li>
+    </ul>
+
+    <h4 id="connecttoaneo4jgraph">Connect to a neo4j graph</h4>
+
+    <ul>
+    <li>Click the New Neo4j button in the file panel (top right)
+
+
+    <ul>
+    <li>Give the file (connection) a name</li>
+
+    <li>Fill out the url, user, and password fields.</li>
+
+    <li>The initialCypher field is optional and can be blank</li>
+
+    <li>Click the Save button in the file panel (top right)</li></ul>
+    </li>
+    </ul>
+
+    <h4 id="localstaticgraphs">Local, Static Graphs</h4>
+
+    <p><img src="./img/graph-editor-animals.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-new.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-edit-node.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-edit-relationship.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-save.png" alt="graph-editor" /></p>
+
+    <h4 id="connectingtoneo4j">Connecting to Neo4j</h4>
+
+    <p><img src="./img/graph-editor-neo4j-new.png" alt="graph-editor" /></p>
+
+    <h4 id="neo4jsavedcyphers">Neo4j: Saved Cyphers</h4>
+
+    <p><img src="./img/graph-editor-animals-IS_A-neo-saved.png" alt="graph-editor" /></p>
+
+    <h4 id="importandexport">Import and Export</h4>
+
+    <p><img src="./img/graph-editor-export-graph.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-export-cypher.png" alt="graph-editor" /></p>
+
+    <p><img src="./img/graph-editor-edit-css.png" alt="graph-editor" /></p>
+
+</body>
+</html>
