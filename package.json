@@ -50,7 +50,7 @@
     "@types/react-select": "^1.2.5",
     "@types/request": "^2.47.0",
     "babel-preset-react": "^6.24.1",
-    "electron": "1.8.4",
+    "electron": "7.2.4",
     "electron-builder": "^20.5.1",
     "electron-webpack": "^1.13.0",
     "electron-webpack-ts": "^1.4.0",
