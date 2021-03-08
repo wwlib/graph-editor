@@ -1,63 +1,106 @@
 {
   "name": "graph-editor",
-  "version": "0.0.3",
-  "license": "MIT",
+  "version": "0.0.1",
+  "main": "build/electron.js",
+  "homepage": "./",
+  "private": true,
   "scripts": {
-    "dev": "electron-webpack dev",
-    "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+    "start:web": "env-cmd -f .env.web craco start",
+    "start": "electron .",
+    "start:electron-dev": "electron electron-dev.js",
+    "build:web": "craco build",
+    "build": "env-cmd -f .env.electron craco build",
+    "test": "react-scripts test",
+    "test:craco": "craco test",
+    "eject": "echo eject:disabled",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "author": "Andrew Rapo <andrew@wwlib.org> (https://wwlib.github.io/)",
+  "scripts-original": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "build": {
+    "asar": false,
+    "files": [
+      "build",
+      "node_modules",
+      "package.json",
+      ".env*"
+    ]
+  },
   "dependencies": {
-    "async": "^2.1.5",
     "d3": "^4.12.0",
-    "ensureDir": "^1.0.6",
-    "find-root": "^1.0.0",
     "font-awesome": "^4.7.0",
     "graph-diagram": "0.0.10",
-    "graphlib-dot": "^0.6.2",
-    "jsonfile": "^2.4.0",
-    "neo4j-driver": "^1.5.1",
+    "graphlib-dot": "^0.6.4",
+    "neo4j-driver": "^4.2.3",
     "osenv": "^0.1.5",
     "pretty-data": "^0.40.0",
-    "react": "^16.2.0",
-    "react-bootstrap": "^0.32.1",
-    "react-dom": "^16.2.0",
-    "react-draggable": "^3.0.5",
-    "react-fontawesome": "^1.6.1",
-    "react-hot-loader": "^4.0.0-beta.13",
-    "react-list": "^0.8.8",
-    "react-password-mask": "^3.3.0",
-    "react-redux": "^5.0.6",
-    "react-router": "^4.2.0",
-    "react-router-dom": "^4.2.2",
-    "react-router-redux": "^5.0.0-alpha.6",
-    "react-select": "^1.2.1",
-    "redux": "^3.7.2",
-    "request": "^2.85.0",
-    "source-map-support": "^0.5.3"
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.5.1",
+    "react-dom": "^17.0.1",
+    "react-draggable": "^4.4.3",
+    "react-fontawesome": "^1.7.1",
+    "react-list": "^0.8.16",
+    "react-spring": "^8.0.27",
+    "uuid": "^8.3.1",
+    "web-vitals": "^0.2.4"
   },
   "devDependencies": {
-    "@types/async": "^2.0.38",
+    "@craco/craco": "^5.7.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
     "@types/d3": "^4.12.0",
-    "@types/node": "^7.0.5",
-    "@types/react": "^16.0.40",
-    "@types/react-bootstrap": "^0.32.6",
-    "@types/react-dom": "^16.0.4",
-    "@types/react-fontawesome": "^1.6.2",
-    "@types/react-list": "^0.8.3",
-    "@types/react-select": "^1.2.5",
-    "@types/request": "^2.47.0",
-    "babel-preset-react": "^6.24.1",
-    "electron": "1.8.4",
-    "electron-builder": "^20.5.1",
-    "electron-webpack": "^1.13.0",
-    "electron-webpack-ts": "^1.4.0",
-    "typescript": "^2.7.2",
-    "webpack": "^3.11.0"
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.53",
+    "@types/react-dom": "^16.9.8",
+    "@types/uuid": "^8.3.0",
+    "electron": "^5.0.0",
+    "electron-builder": "^22.9.1",
+    "env-cmd": "^10.1.0",
+    "react-scripts": "4.0.0",
+    "ts-node": "^9.0.0",
+    "typescript": "3.6.4",
+    "webpack-node-externals": "^1.7.2"
   },
-  "resolutions": {
-    "webpack-sources": "1.0.1"
-  }
+  "dev-dependencies-save": {
+    "d3": "^6.2.0",
+    "electron": "^10.1.5",
+    "react-bootstrap": "^1.5.1",
+    "typescript": "^4.0.3",
+    "webpack-node-externals": "^2.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "react,create-react-app,cra,craco,electron,electron-builder"
+  ],
+  "author": "Andrew Rapo <andrew@wwlib.org> (https://wwlib.github.io/)",
+  "contributors": [],
+  "license": "MIT"
 }
