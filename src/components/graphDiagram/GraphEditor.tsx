@@ -334,22 +334,13 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         let height: number = svgElement ? svgElement.clientHeight / 2 : this.props.appModel.appDimensions.height / 2;
 
         // https://bl.ocks.org/wnghdcjfe/c2b04ee8430afa32ce76596daa4d8123
-        simulation = d3Force.forceSimulation()
-            .force("link", d3Force.forceLink().id(function(d: any) { return d.index })) //.distance((d:any) => {return  d.source.r + d.target.r + 45}).strength(1))
-            .force("collide",d3Force.forceCollide( function(d: any){return d.r + 25 }))
-            .force("charge", d3Force.forceManyBody()) //.strength(-5000).distanceMin(500).distanceMax(2000))
-            .force("center", d3Force.forceCenter(width, height))
-            .force("y", d3Force.forceY(0.001))
-            .force("x", d3Force.forceX(0.001))
-
-        // simulation = d3Force.forceSimulation(simData.nodes)
-        //     .force("link", d3Force.forceLink(simData.links).id(function(d: any) { return d.index })) //.distance((d:any) => {return  d.source.r + d.target.r + 45}).strength(1))
-        //     .force("charge", d3Force.forceManyBody().strength(-1500))
-        //     .force('center', d3Force.forceCenter(width, height))
-        //     .force("x", d3Force.forceX())
-        //     .force("y", d3Force.forceY())
-        //     .stop()
-        //     .tick(300)
+        // simulation = d3Force.forceSimulation()
+        //     .force("link", d3Force.forceLink().id(function(d: any) { return d.index })) //.distance((d:any) => {return  d.source.r + d.target.r + 45}).strength(1))
+        //     .force("collide",d3Force.forceCollide( function(d: any){return d.r + 25 }))
+        //     .force("charge", d3Force.forceManyBody()) //.strength(-5000).distanceMin(500).distanceMax(2000))
+        //     .force("center", d3Force.forceCenter(width, height))
+        //     .force("y", d3Force.forceY(0.001))
+        //     .force("x", d3Force.forceX(0.001))
 
         // from neo4j-browser
         // linkDistance = 45
@@ -376,23 +367,24 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
                 .attr( "display", "none");
         }
 
-        // simLinks = svg_g.select( "g.layer.nodes" ).append("g")
-        //     .attr("class", "links")
-        //     .selectAll("line")
-        //     .data(simData.links)
-        //     .enter().append("line")
-        //     .attr("stroke-width", function(d: any) { return 1; });
+        simulation = d3Force.forceSimulation(simData.nodes)
+            .force("link", d3Force.forceLink(simData.links).id(function(d: any) { return d.index })) //.distance((d:any) => {return  d.source.r + d.target.r + 45}).strength(1))
+            .force("charge", d3Force.forceManyBody().strength(-1500))
+            .force('center', d3Force.forceCenter(width, height))
+            .force("x", d3Force.forceX())
+            .force("y", d3Force.forceY())
+            .stop()
+            .tick(300)
 
-        simulation
-            .nodes(simData.nodes)
-            .on("tick", thiz.ticked)
-            .on("end", thiz.ended);
+        // simulation
+        //     .nodes(simData.nodes)
+        //     .on("tick", thiz.ticked)
+        //     .on("end", thiz.ended);
 
-        simulation.force("link")
-            .links(simData.links);
+        // simulation.force("link")
+        //     .links(simData.links);
 
-        // thiz.ticked();
-        // thiz.ended();
+        this.updateAndRedrawNodes();
     }
 
     ticked() {
@@ -403,9 +395,9 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
         //     .attr("x2", function(d: any) { return d.target.x; })
         //     .attr("y2", function(d: any) { return d.target.y; });
 
-        simNodes
-            .attr("cx", function(d: any) { return d.x; })
-            .attr("cy", function(d: any) { return d.y; });
+        // simNodes
+        //     .attr("cx", function(d: any) { return d.x; })
+        //     .attr("cy", function(d: any) { return d.y; });
 
         simulationTickCount++
         if (simulationTickCount >= simulationMaxTicks) {
@@ -415,6 +407,10 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
 
     ended() {
         simulation.stop();
+        thiz.updateAndRedrawNodes();
+    }
+
+    updateAndRedrawNodes() {
         simData.nodes.forEach((node: any) => {
             node.layoutNode.x = node.x;
             node.layoutNode.y = node.y;
@@ -431,7 +427,7 @@ export default class GraphEditor extends React.Component < GraphEditorProps, Gra
             svg_g.select( "g.layer.nodes" ).selectAll( "g.caption")
                 .attr( "display", "block");
         }
-        thiz.draw();
+        this.draw();
     }
 
     draw()
