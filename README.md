@@ -25,17 +25,18 @@ yarn
 ### Development Scripts
 
 ```bash
-# run application in development mode
-yarn dev
-
 # compile source code and create webpack output
-yarn compile
+yarn build
+
+# run application
+yarn start
+
+# run application in development mode
+yarn start:electron-dev
 
 # `yarn compile` & create build with electron-builder
 yarn dist
 
-# `yarn compile` & create unpacked build with electron-builder
-yarn dist:dir
 ```
 
 ### Usage
