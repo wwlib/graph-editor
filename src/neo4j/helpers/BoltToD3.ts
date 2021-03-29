@@ -12,7 +12,11 @@ export default class BoltToD3 {
     }
 
     isLink(field: any) {
-        return field.start && field.end;
+        let result: boolean = false;
+        if (field && field.start && field.end) {
+            result = true;
+        }
+        return result;
     }
 
     isNode(field: any) {
@@ -124,7 +128,7 @@ export default class BoltToD3 {
                 fieldCandidate.forEach((field: any) => {
                     fieldArray.push(field);
                 })
-            } else {
+            } else if (fieldCandidate){
                 fieldArray.push(fieldCandidate);
             }
             fieldArray.forEach((field: any) => {

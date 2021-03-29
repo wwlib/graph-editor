@@ -89,6 +89,9 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                 case 'run':
                     this.executeCypher(this.state.activeCypher);
                     break;
+                case 'runAdd': // add to the existing graph
+                    this.executeCypher(this.state.activeCypher, true);
+                    break;
                 case 'new':
                     this.newSavedCypher();
                     break;
@@ -116,9 +119,9 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
         }
     }
 
-    executeCypher(activeCypher: SavedCypher): void {
+    executeCypher(activeCypher: SavedCypher, addToExistingGraph: boolean = false): void {
         // this.props.appModel.executeCypher(activeCypher.cypher);
-        this.props.appModel.createGraphModelWithCypherQuery(activeCypher.cypher);
+        this.props.appModel.createGraphModelWithCypherQuery(activeCypher.cypher, { addToExistingGraph: addToExistingGraph });
     }
 
     newSavedCypher(): void {
@@ -200,6 +203,8 @@ export default class CypherPanel extends React.Component<CypherPanelProps, Cyphe
                     </ReactBootstrap.Table>
                     <ReactBootstrap.Button variant={'default'} key={"run"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "run")}>Run</ReactBootstrap.Button>
+                    <ReactBootstrap.Button variant={'default'} key={"runAdd"} style = {{width: 80}}
+                        onClick={this.onButtonClicked.bind(this, "runAdd")}>Run+</ReactBootstrap.Button>
                     <ReactBootstrap.Button variant={'default'} key={"new"} style = {{width: 80}}
                         onClick={this.onButtonClicked.bind(this, "new")}>New</ReactBootstrap.Button>
                     <ReactBootstrap.Button variant={'default'} key={"delete"} style = {{width: 80}}

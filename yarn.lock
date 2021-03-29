@@ -6296,10 +6296,9 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://npm.jibo.com/repository/ntt/graceful-fs/-/graceful-fs-4.2.4.tgz#2256bde14d3632958c465ebc96dc467ca07a29fb"
   integrity sha512-WjKPNJF79dtJAVniUlGGWHYGz2jWxT6VhN/4m1NdkbZ2nOsEF+cI1Edgql5zCRhs/VsQYRvrXctxktVXZUkixw==
 
-graph-diagram@0.0.10:
-  version "0.0.10"
-  resolved "https://registry.npmjs.org/graph-diagram/-/graph-diagram-0.0.10.tgz#56611ff6e9d32c6355c756f0519fb04eb644f540"
-  integrity sha1-VmEf9unTLGNVx1bwUZ+wTrZE9UA=
+graph-diagram@wwlib/graph-diagram#v0.0.11:
+  version "0.0.11"
+  resolved "https://codeload.github.com/wwlib/graph-diagram/tar.gz/00620064fe934a7df44d33f3d979c4307e0a8a37"
 
 graphlib-dot@^0.6.4:
   version "0.6.4"
