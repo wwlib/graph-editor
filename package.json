@@ -52,7 +52,7 @@
   "dependencies": {
     "d3": "^4.12.0",
     "font-awesome": "^4.7.0",
-    "graph-diagram": "0.0.10",
+    "graph-diagram": "wwlib/graph-diagram#v0.0.11",
     "graphlib-dot": "^0.6.4",
     "neo4j-driver": "^4.2.3",
     "osenv": "^0.1.5",

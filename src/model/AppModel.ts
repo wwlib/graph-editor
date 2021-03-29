@@ -208,19 +208,31 @@ circle.node-base {
             case "neo4j":
                 this.neo4jController = new Neo4jController({ debug: true, connection: graph.connection });
                 graph.config = new Neo4jGraphConfig(graph.config);
-                this.createGraphModelWithCypherQuery(graph.connection.initialCypher, graph);
+                this.createGraphModelWithCypherQuery(graph.connection.initialCypher, { graph: graph });
                 break;
         }
     }
 
-    createGraphModelWithCypherQuery(cypher: string, graph?: Graph): void {
-        console.log(`createGraphModelWithCypherQuery: cypher: ${cypher}`, graph);
-        graph = graph || this.activeGraph;
+    createGraphModelWithCypherQuery(cypher: string, options?: any): void {
+        let graph: Graph | undefined = this.activeGraph;
+        let addToExistingGraph: boolean = false;
+        if (options) {
+            graph = options.graph || graph;
+            addToExistingGraph = options.addToExistingGraph;
+        }
+        console.log(`createGraphModelWithCypherQuery: cypher: ${cypher}`, graph, addToExistingGraph);
         if(this.neo4jController) {
             this.neo4jController.getCypherAsD3(cypher)
                 .then(data => {
                     console.log(data);
-                    this.graphModel = ModelToD3.parseD3(data, undefined, this.getSvgOrigin());
+                    let newGraphModel = ModelToD3.parseD3(data, undefined, this.getSvgOrigin());
+                    if (addToExistingGraph) {
+                        const existingData: any = ModelToD3.convert(this.graphModel);
+                        const mergedData = ModelToD3.mergeD3(data, existingData);
+                        console.log(mergedData);
+                        newGraphModel = ModelToD3.parseD3(mergedData, undefined, this.getSvgOrigin());
+                    }
+                    this.graphModel = newGraphModel;
                     this._activeNode = this.graphModel.nodeList()[0];
                     this._activeRelationship = this.graphModel.relationshipList()[0];
                     this.activeGraph = graph;
