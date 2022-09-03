@@ -41,7 +41,6 @@ export interface GraphEditorState {
     lastUpdateTime: number;
 }
 
-let thiz: GraphEditor;
 let svgContainer: any;
 let svg: Selection<Element, {}, any, any> | undefined;
 let svg_g: Selection<Element, {}, any, any> | undefined;
@@ -68,7 +67,6 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
     private _dragged: boolean = false;
 
     componentWillMount() {
-        thiz = this;
         this.setState({
             scale: 1.0,
             // linkDistance: 100,
@@ -139,7 +137,7 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
     initGraphEditor(): void {
         this.diagram = new Diagram()
             .scaling(null)
-            .overlay(function (layoutModel: LayoutModel, view: any) {
+            .overlay((layoutModel: LayoutModel, view: any) => {
                 // fixes a null reference when dragging
                 let svgElement: Selection<SVGSVGElement, any, HTMLElement, any> = select<SVGSVGElement, any>('svg');
                 view = svgElement.select('g.layer.overlay');
@@ -155,8 +153,8 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
                 var merge = nodeOverlays.merge(nodeOverlaysEnter);
 
                 merge
-                    .call(drag().on("start", thiz._dragStartHandler).on("drag", thiz._dragNodeHandler).on("end", thiz._dragEndHandler))
-                    .on("dblclick", thiz._editNodeHandler)
+                    .call(drag().on("start", this._dragStartHandler).on("drag", this._dragNodeHandler).on("end", this._dragEndHandler))
+                    .on("dblclick", this._editNodeHandler)
                     .attr("r", function (node: LayoutNode) {
                         return node.radius.outside();
                     })
@@ -182,7 +180,7 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
                 var merge = nodeRings.merge(nodeRingsEnter);
 
                 merge
-                    .call(drag().on("drag", thiz._dragRingHandler).on("end", thiz._dragEndHandler))
+                    .call(drag().on("drag", this._dragRingHandler).on("end", this._dragEndHandler))
                     .attr("r", function (node: LayoutNode) {
                         return node.radius.outside() + 5;
                     })
@@ -212,7 +210,7 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
                     .attr("fill", "rgba(255, 255, 255, 0)")
                     .attr("stroke", "rgba(255, 255, 255, 0)")
                     .attr("stroke-width", "10px")
-                    .on("dblclick", thiz._editRelationshipHandler)
+                    .on("dblclick", this._editRelationshipHandler)
                     .attr("transform", function (r: any) {
                         var angle = r.start.model.angleTo(r.end.model);
                         return "translate(" + r.start.model.ex() + "," + r.start.model.ey() + ") rotate(" + angle + ")";
@@ -460,8 +458,8 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
             this.resetFixedNodes()
         }
 
-        if (thiz.diagram) {
-            simData = thiz.generateSimData(thiz.diagram);
+        if (this.diagram) {
+            simData = this.generateSimData(this.diagram);
         }
 
         if (svg_g) {
@@ -492,14 +490,14 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
             .stop()
             .on("end", () => {
                 console.log('simulation: end');
-                thiz.ended()
+                this.ended()
             })
 
         for (let i = 0; i < preTicks; i++) {
             simulation.tick();
         }
         // this.ticked();
-        simulation.on('tick', this.ticked)
+        simulation.on('tick', this.ticked.bind(this))
         this.restartSimulation()
     }
 
@@ -525,12 +523,12 @@ export default class GraphEditor extends React.Component<GraphEditorProps, Graph
     }
 
     ticked() {
-        thiz.updateAndRedrawNodes();
+        this.updateAndRedrawNodes();
     }
 
     ended() {
         if (simulation) simulation.stop();
-        thiz.updateAndRedrawNodes();
+        this.updateAndRedrawNodes();
         console.log(`ended:`, simData)
     }
 
