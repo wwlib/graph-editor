@@ -88,6 +88,7 @@
   },
   "dev-dependencies-save": {
     "d3": "^6.2.0",
+    "@types/d3": "^6.2.0",
     "electron": "^10.1.5",
     "react-bootstrap": "^1.5.1",
     "typescript": "^4.0.3",

@@ -31,6 +31,7 @@ export default class AppModel extends EventEmitter {
     public neo4jController: Neo4jController | undefined;
     public graphModel: Model | undefined;
     public activeGraph: Graph | undefined;
+    public activeGraphFixedNodePositions: any; // aweful hack to track fixed node positions! TODO: rewrite GraphEditor, Diagram, etc.
     public appDimensions: {width: number, height: number} = {width: 1280, height:720}
 
     private _activeNode: Node | undefined;
@@ -86,13 +87,14 @@ export default class AppModel extends EventEmitter {
         this._activeNode = this.graphModel.nodeList()[0];
         this._activeRelationship = undefined;
         this.activeGraph = newGraph;
+        this.activeGraphFixedNodePositions = {}
         this.applyActiveGraphCss();
         this.onUpdateActiveGraph();
 
         if (newGraph.name && newGraph.name != '<filename>' && this.graphSet) {
             this.graphSet.addGraph(newGraph);
             this.initGraph(newGraph);
-            this.saveGraph(newGraph);
+            this.saveGraph(newGraph, this.activeGraphFixedNodePositions);
         }
     }
 
@@ -202,12 +204,20 @@ circle.node-base {
                     this._activeRelationship = this.graphModel.relationshipList()[0];
                 }
                 this.activeGraph = graph;
+                this.activeGraphFixedNodePositions = {}
+                if (graph.fixedNodePositions) {
+                    this.activeGraphFixedNodePositions = graph.fixedNodePositions
+                }
                 this.applyActiveGraphCss();
                 this.onUpdateActiveGraph();
                 break;
             case "neo4j":
                 this.neo4jController = new Neo4jController({ debug: true, connection: graph.connection });
                 graph.config = new Neo4jGraphConfig(graph.config);
+                this.activeGraphFixedNodePositions = {}
+                if (graph.fixedNodePositions) {
+                    this.activeGraphFixedNodePositions = graph.fixedNodePositions
+                }
                 this.createGraphModelWithCypherQuery(graph.connection.initialCypher, { graph: graph });
                 break;
         }
@@ -244,6 +254,17 @@ circle.node-base {
                     console.log(`createGraphModelWithCypherQuery: error:`, error);
                     this.emit('onCypherExecutionError', error);
                 })
+        }
+    }
+
+    expandActiveNode() {
+        if (this.activeGraph && this.activeGraph.type == "neo4j" && this.neo4jController) {
+            console.log(`expandActiveNode:`, this._activeNode);
+            const cypher = `MATCH (n)
+WHERE ID(n) = ${this._activeNode.id}
+OPTIONAL MATCH (n)-[r]-(e)
+RETURN n,r,e`
+            this.createGraphModelWithCypherQuery(cypher, { addToExistingGraph: true });
         }
     }
 
@@ -767,16 +788,17 @@ circle.node-base {
     saveActiveGraph(): void {
         // console.log(`saveActiveGraph: `, this.activeGraph, this.graphModel);
         if (this.activeGraph) {
-            this.saveGraph(this.activeGraph);
+            this.saveGraph(this.activeGraph, this.activeGraphFixedNodePositions);
         }
     }
 
-    saveGraph(graph: Graph): void {
+    saveGraph(graph: Graph, fixedNodePositions: any): void {
         if (graph && this.graphModel && this.graphSet) {
             if (graph.type == "file") {
                 graph.d3Graph = ModelToD3.convert(this.graphModel);
                 graph.markup = this.getMarkup();
             }
+            graph.fixedNodePositions = fixedNodePositions
             this.graphSet.saveGraph(graph);
         }
     }

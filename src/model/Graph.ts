@@ -23,6 +23,7 @@ export type GraphData = {
     d3Graph: d3Types.d3Graph;
     markup?: string;
     dot?: string
+    fixedNodePositions?: any
 }
 
 export default class Graph {
@@ -37,6 +38,7 @@ export default class Graph {
     public d3Graph: d3Types.d3Graph | undefined;
     public markup: string = '';
     public dot: string = '';
+    public fixedNodePositions: any;
 
     constructor(connection?: any) {
         this.connection = connection;
@@ -103,6 +105,7 @@ export default class Graph {
       this.d3Graph = json.d3Graph;
       this.markup = json.markup;
       this.dot = json.dot;
+      this.fixedNodePositions = json.fixedNodePositions
 
       return this;
     }
@@ -118,6 +121,7 @@ export default class Graph {
         json.d3Graph =  this.d3Graph;
         json.markup = this.markup;
         json.dot = this.dot;
+        json.fixedNodePositions = this.fixedNodePositions
 
         return json;
     }
