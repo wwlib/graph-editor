@@ -64,10 +64,7 @@ export default class Graph {
        text.caption {
          fill: #FFFFFF;
       }
-       body {
-         background-color: lightgrey;
-      }
-       circle.node-type-Robot {
+      circle.node-type-Robot {
          fill: #BF85D6;
          stroke: #68BDF6;
          stroke-width: 3px;
@@ -97,9 +94,19 @@ export default class Graph {
        circle.node.ring:hover {
          stroke: rgba(150, 150, 255, 0.5);
       }
-       path.relationship.overlay:hover {
+      body {
+        background-color: #2A2C32;
+      }
+      path.relationship.overlay:hover {
          fill: rgba(150, 150, 255, 0.5);
          stroke: rgba(150, 150, 255, 0.5);
+      }
+      path.relationship {
+        fill: #A0A5AF 
+      }
+    
+      text.type {
+        fill: white 
       }
 `;
       this.d3Graph = json.d3Graph;

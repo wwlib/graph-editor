@@ -50,7 +50,7 @@ let simulation: any;
 let simData: any;
 export default class GraphEditor extends React.Component<GraphEditorProps, GraphEditorState> {
 
-    static SIM_ALPHA: number = .25
+    static SIM_ALPHA: number = 1.0
     static SIM_PRE_TICKS: number = 600
     public diagram: Diagram | undefined;
 

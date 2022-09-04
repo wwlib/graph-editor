@@ -12,7 +12,7 @@
 }
 
 body {
-    background-color: lightgrey;
+    background-color: #2A2C32;
     overflow:hidden;
 }
 
@@ -131,4 +131,12 @@ circle.node.ring:hover {
 path.relationship.overlay:hover {
     fill: rgba(150, 150, 255, 0.5);
     stroke: rgba(150, 150, 255, 0.5);
+}
+
+path.relationship {
+    fill: #A0A5AF 
+ }
+
+text.type {
+    fill: white 
 }
